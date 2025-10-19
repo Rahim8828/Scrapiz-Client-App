@@ -12,12 +12,13 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
-import { User, MapPin, Bell, Shield, CircleHelp as HelpCircle, Star, Gift, ChevronRight, Award, LogOut, Phone, Mail, Package, Clock, CheckCircle } from 'lucide-react-native';
+import { User, MapPin, Bell, Shield, CircleHelp as HelpCircle, Star, Gift, ChevronRight, Award, LogOut, Phone, Mail, Package, Clock, CheckCircle, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 const profileData = {
   name: 'Anas Farooqui',
@@ -66,6 +67,46 @@ export default function ProfileScreen() {
       .map(n => n[0].toUpperCase())
       .join('')
       .slice(0, 2);
+  };
+
+  const handleProfileImagePick = async () => {
+    try {
+      // Request permission
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Please allow access to your photo library to update your profile picture.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const imageUri = result.assets[0].uri;
+        // TODO: Upload to server and update profile context
+        // For now, we'll just show a success message
+        Alert.alert(
+          'Profile Photo',
+          'Profile photo will be updated once you save changes in Edit Profile.',
+          [{ text: 'OK' }]
+        );
+        // You can add logic here to temporarily store the image URI
+        // and navigate to edit-profile screen to save it
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
   };
 
   const handleNavigation = (path: string) => {
@@ -167,6 +208,7 @@ export default function ProfileScreen() {
           style={styles.header}
         >
           <View style={styles.profileContainer}>
+            <TouchableOpacity onPress={handleProfileImagePick} style={styles.avatarWrapper}>
               {isLoading ? (
                 <View style={styles.avatar}>
                   <ActivityIndicator size="small" color="white" />
@@ -181,6 +223,10 @@ export default function ProfileScreen() {
                   <Text style={styles.avatarText}>{getInitials()}</Text>
                 </View>
               )}
+              <View style={styles.plusIconContainer}>
+                <Plus size={16} color="#16a34a" strokeWidth={3} />
+              </View>
+            </TouchableOpacity>
               <View style={styles.profileInfo}>
                   <Text style={styles.profileName}>{profile.fullName}</Text>
                   <Text style={styles.profileEmail}>{profile.email}</Text>
@@ -276,6 +322,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  avatarWrapper: {
+    position: 'relative',
+    marginRight: 16,
+  },
   avatar: {
     width: 64,
     height: 64,
@@ -283,7 +333,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
     borderWidth: 2,
     borderColor: 'white',
   },
@@ -291,9 +340,21 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    marginRight: 16,
     borderWidth: 2,
     borderColor: 'white',
+  },
+  plusIconContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#16a34a',
   },
   avatarText: {
     color: 'white',
