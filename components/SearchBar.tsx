@@ -3,7 +3,7 @@
  * Search bar for finding scrap services and categories
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   ScrollView,
   Dimensions,
   Image,
+  Keyboard,
 } from 'react-native';
 import { Search, X, ChevronRight } from 'lucide-react-native';
 import { scrapData } from '../data/scrapData';
@@ -38,8 +39,9 @@ export default function SearchBar() {
   const [isFocused, setIsFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isNavigating, setIsNavigating] = useState(false);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     
     if (query.trim().length === 0) {
@@ -49,17 +51,23 @@ export default function SearchBar() {
 
     const results: SearchResult[] = [];
     const lowerQuery = query.toLowerCase();
+    const addedIds = new Set<string>(); // Prevent duplicates
 
     // Search across scrap categories and items
     scrapData.forEach((category) => {
       category.items.forEach((item) => {
+        const itemId = `scrap-${category.id}-${item.name}`;
+        
+        // Check if already added and if matches search criteria
         if (
-          item.name.toLowerCase().includes(lowerQuery) ||
+          !addedIds.has(itemId) &&
+          (item.name.toLowerCase().includes(lowerQuery) ||
           item.description.toLowerCase().includes(lowerQuery) ||
-          category.title.toLowerCase().includes(lowerQuery)
+          category.title.toLowerCase().includes(lowerQuery))
         ) {
+          addedIds.add(itemId);
           results.push({
-            id: `scrap-${category.id}-${item.name}`,
+            id: itemId,
             name: item.name,
             description: item.description,
             category: category.title,
@@ -74,12 +82,16 @@ export default function SearchBar() {
 
     // Search across services
     services.forEach((service) => {
+      const serviceId = `service-${service.id}`;
+      
       if (
-        service.title.toLowerCase().includes(lowerQuery) ||
-        service.description.toLowerCase().includes(lowerQuery)
+        !addedIds.has(serviceId) &&
+        (service.title.toLowerCase().includes(lowerQuery) ||
+        service.description.toLowerCase().includes(lowerQuery))
       ) {
+        addedIds.add(serviceId);
         results.push({
-          id: `service-${service.id}`,
+          id: serviceId,
           name: service.title,
           description: service.description,
           category: 'Services',
@@ -91,47 +103,73 @@ export default function SearchBar() {
     });
 
     setSearchResults(results);
-  };
+  }, []);
 
-  const handleSelectResult = (result: SearchResult) => {
+  const handleSelectResult = useCallback((result: SearchResult) => {
+    if (isNavigating) return; // Prevent multiple taps
+    
+    setIsNavigating(true);
+    Keyboard.dismiss();
     setIsFocused(false);
     setSearchQuery('');
     setSearchResults([]);
     
     if (result.type === 'service') {
+      // Navigate to services screen
       const serviceId = result.id.replace('service-', '');
-      router.push(`/services/${serviceId}`);
+      router.push(`/services/${serviceId}` as any);
     } else {
-      // Navigate to sell tab with the selected item
-      router.push(`/(tabs)/sell?preSelectedItem=${encodeURIComponent(result.name)}&preSelectedCategory=${encodeURIComponent(result.category)}`);
+      // Navigate to sell tab with pre-selected item
+      router.push({
+        pathname: '/(tabs)/sell',
+        params: {
+          preSelectedItem: result.name,
+          preSelectedCategory: result.category,
+        }
+      } as any);
     }
-  };
+    
+    // Reset navigation state after a delay
+    setTimeout(() => setIsNavigating(false), 1000);
+  }, [isNavigating, router]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearchQuery('');
     setSearchResults([]);
-  };
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    Keyboard.dismiss();
+    setIsFocused(false);
+    setSearchQuery('');
+    setSearchResults([]);
+    setIsNavigating(false);
+  }, []);
 
   const popularSearches = [
     { 
       label: 'Paper', 
       color: '#10b981',
-      image: require('../assets/images/Scrap Rates Photos/Newspaper.jpg')
+      image: require('../assets/images/Scrap Rates Photos/Newspaper.jpg'),
+      category: 'Types of Paper Scrap'
     },
     { 
       label: 'Plastic', 
       color: '#3b82f6',
-      image: require('../assets/images/Scrap Rates Photos/Plastics.jpg')
+      image: require('../assets/images/Scrap Rates Photos/Plastics.jpg'),
+      category: 'Types of Plastic Scrap'
     },
     { 
       label: 'Metal', 
       color: '#f59e0b',
-      image: require('../assets/images/Scrap Rates Photos/Iron.jpg')
+      image: require('../assets/images/Scrap Rates Photos/Iron.jpg'),
+      category: 'Types of Metal Scrap'
     },
     { 
       label: 'Electronics', 
       color: '#8b5cf6',
-      image: require('../assets/images/Scrap Rates Photos/Laptops.jpg')
+      image: require('../assets/images/Scrap Rates Photos/Laptops.jpg'),
+      category: 'Types of Electronic Scrap'
     },
   ];
 
@@ -154,7 +192,7 @@ export default function SearchBar() {
         visible={isFocused}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setIsFocused(false)}
+        onRequestClose={handleCloseModal}
       >
         <View style={styles.modalContainer}>
           {/* Search Header */}
@@ -177,7 +215,7 @@ export default function SearchBar() {
             </View>
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={() => setIsFocused(false)}
+              onPress={handleCloseModal}
             >
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
@@ -196,7 +234,20 @@ export default function SearchBar() {
                         styles.popularChip,
                         { borderColor: item.color + '40' },
                       ]}
-                      onPress={() => handleSearch(item.label)}
+                      onPress={() => {
+                        if (isNavigating) return;
+                        setIsNavigating(true);
+                        Keyboard.dismiss();
+                        setIsFocused(false);
+                        setSearchQuery('');
+                        router.push({
+                          pathname: '/(tabs)/sell',
+                          params: {
+                            preSelectedCategory: item.category,
+                          }
+                        } as any);
+                        setTimeout(() => setIsNavigating(false), 1000);
+                      }}
                     >
                       <Image
                         source={item.image}
@@ -217,8 +268,12 @@ export default function SearchBar() {
                     key={service.id}
                     style={styles.serviceItem}
                     onPress={() => {
+                      if (isNavigating) return;
+                      setIsNavigating(true);
+                      Keyboard.dismiss();
                       setIsFocused(false);
                       router.push(`/services/${service.id}`);
+                      setTimeout(() => setIsNavigating(false), 1000);
                     }}
                   >
                     <View style={styles.serviceIconContainer}>
@@ -241,9 +296,18 @@ export default function SearchBar() {
                     key={category.id}
                     style={styles.categoryItem}
                     onPress={() => {
+                      if (isNavigating) return;
+                      setIsNavigating(true);
+                      Keyboard.dismiss();
                       setIsFocused(false);
-                      // Navigate to sell tab (first tab is index 0, sell is at index 2)
-                      router.push('/(tabs)/sell');
+                      setSearchQuery('');
+                      router.push({
+                        pathname: '/(tabs)/sell',
+                        params: {
+                          preSelectedCategory: category.title,
+                        }
+                      } as any);
+                      setTimeout(() => setIsNavigating(false), 1000);
                     }}
                   >
                     {category.items[0]?.image && (

@@ -206,9 +206,9 @@ export default function LoginScreen() {
             ]}
           >
             <View style={styles.logoContainer}>
-              <ScrapizLogo width={240} />
+              <ScrapizLogo width={330} />
               <View style={styles.badge}>
-                <Sparkles size={11} color="#ffffff" />
+                <Sparkles size={12} color="#ffffff" />
                 <Text style={styles.badgeText}>Trusted by 10,000+ users</Text>
               </View>
             </View>
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   greenHeader: {
     position: 'absolute',
     width: '100%',
-    height: height * 0.38,
+    height: height * 0.42,
     top: 0,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: height * 0.38 + 10,
+    paddingTop: height * 0.42 - 5,
     paddingBottom: 30,
     justifyContent: 'space-between',
   },
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
   header: {
     alignItems: 'center',
@@ -494,7 +494,9 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 10,
+    width: '100%',
   },
   logoGlow: {
     display: 'none',
@@ -502,34 +504,37 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 18,
-    gap: 5,
-    marginTop: 10,
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 24,
+    gap: 7,
+    marginTop: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)',
   },
   badgeText: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#ffffff',
     fontWeight: '700',
-    letterSpacing: 0.3,
+    letterSpacing: 0.6,
   },
   welcomeText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: '#ffffff',
     marginBottom: 5,
-    marginTop: 8,
+    marginTop: 0,
     textAlign: 'center',
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
   subtitleText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#ffffff',
     textAlign: 'center',
-    lineHeight: 19,
-    maxWidth: 280,
+    lineHeight: 20,
+    maxWidth: 290,
     fontWeight: '500',
     opacity: 0.95,
   },
