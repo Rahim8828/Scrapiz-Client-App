@@ -294,7 +294,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.referTextContainer}>
               <Text style={styles.referTitle}>Refer & Earn Rewards 🎁</Text>
-              <Text style={styles.referSubtitle}>Share with friends and earn ₹20 per referral!</Text>
+              <Text style={styles.referSubtitle}>Share with friends and earn ₹10 per referral!</Text>
             </View>
             <ChevronRight size={20} color="#f59e0b" strokeWidth={2.5} />
           </LinearGradient>

@@ -23,11 +23,14 @@ import {
   Phone,
   User,
   X,
+  Wallet,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { scrapData, getAverageRate, type ScrapItem } from '../../data/scrapData';
 import { addOrder, type OrderItem } from '../../data/orderData';
+import { useReferral } from '../../contexts/ReferralContext';
+import { useLocation } from '../../contexts/LocationContext';
 
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -60,10 +63,15 @@ const stepTitles = [
 export default function SellScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { walletBalance, setWalletBalance, applyReferralDiscount } = useReferral();
+  const { savedLocations, currentLocation } = useLocation();
+  
   const [selectedItems, setSelectedItems] = useState<SelectedScrapItem[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [useReferralBalance, setUseReferralBalance] = useState(false);
+  const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | null>(null);
   const [addressForm, setAddressForm] = useState({
     title: '',
     addressLine: '',
@@ -117,6 +125,13 @@ export default function SellScreen() {
       }
     }
   }, [params.preSelectedItem, params.preSelectedCategory, hasProcessedParams]);
+
+  // Auto-select first saved address when switching to saved addresses
+  useEffect(() => {
+    if (!useNewAddress && savedLocations.length > 0 && !selectedSavedAddressId) {
+      setSelectedSavedAddressId(savedLocations[0].id);
+    }
+  }, [useNewAddress, savedLocations, selectedSavedAddressId]);
 
   const pickImage = async () => {
     // Ask for permission
@@ -183,6 +198,16 @@ export default function SellScreen() {
     return selectedItems.reduce((total, item) => total + (getAverageRate(item) * item.quantity), 0);
   };
 
+  const getReferralDiscount = () => {
+    if (!useReferralBalance || walletBalance === 0) return 0;
+    const totalAmount = getTotalAmount();
+    return applyReferralDiscount(totalAmount);
+  };
+
+  const getFinalAmount = () => {
+    return getTotalAmount() + getReferralDiscount(); // ADD referral bonus, not subtract!
+  };
+
   const getFormattedAddress = () => {
     const { title, addressLine, landmark, city, pinCode } = addressForm;
     let address = '';
@@ -191,6 +216,35 @@ export default function SellScreen() {
     if (city) address += city ? `, ${city}` : '';
     if (pinCode) address += pinCode ? ` - ${pinCode}` : '';
     return address || 'Address not provided';
+  };
+
+  const getSelectedSavedAddress = () => {
+    if (!selectedSavedAddressId) return null;
+    return savedLocations.find(loc => loc.id === selectedSavedAddressId);
+  };
+
+  const getDisplayAddress = () => {
+    if (useNewAddress) {
+      return getFormattedAddress();
+    } else {
+      const savedAddress = getSelectedSavedAddress();
+      if (savedAddress) {
+        return `${savedAddress.address}, ${savedAddress.city} - ${savedAddress.pincode}`;
+      }
+      return 'No address selected';
+    }
+  };
+
+  const getAddressTitle = () => {
+    if (useNewAddress) {
+      return addressForm.title;
+    } else {
+      const savedAddress = getSelectedSavedAddress();
+      if (savedAddress) {
+        return savedAddress.label || savedAddress.type.charAt(0).toUpperCase() + savedAddress.type.slice(1);
+      }
+      return '';
+    }
   };
 
   const validateMobileNumber = (mobile: string): boolean => {
@@ -216,6 +270,11 @@ export default function SellScreen() {
         if (!addressForm.city.trim()) newErrors.city = '🏙️ City is required';
         if (!addressForm.pinCode.trim()) newErrors.pinCode = '📮 PIN code is required';
         else if (!/^\d{6}$/.test(addressForm.pinCode)) newErrors.pinCode = '📮 PIN code must be 6 digits';
+      } else {
+        // Using saved address
+        if (!selectedSavedAddressId) {
+          newErrors.savedAddress = '📍 Please select a saved address';
+        }
       }
       
       if (!contactForm.name.trim()) newErrors.name = '👤 Name is required';
@@ -288,24 +347,39 @@ export default function SellScreen() {
       categoryColor: item.categoryColor
     }));
 
+    const estimatedAmount = getTotalAmount();
+    const referralAmount = useReferralBalance ? getReferralDiscount() : 0;
+    const totalPayout = getFinalAmount();
+
     // Create the order
     const newOrder = addOrder({
       type: 'scrap',
       status: 'scheduled',
       items: orderItems,
-      totalAmount: getTotalAmount(),
+      totalAmount: estimatedAmount,
+      referralBonus: referralAmount > 0 ? referralAmount : undefined,
+      finalAmount: referralAmount > 0 ? totalPayout : undefined,
       scheduledDate: selectedDate,
       scheduledTime: selectedTime,
       address: {
-        title: useNewAddress ? addressForm.title : 'Home',
-        fullAddress: useNewAddress ? getFormattedAddress() : '123, Green Valley Apartment, Sector 21, Pune - 411001'
+        title: getAddressTitle(),
+        fullAddress: getDisplayAddress()
       },
       photos: selectedImages
     });
 
+    // Deduct referral balance if used
+    if (useReferralBalance && referralAmount > 0) {
+      setWalletBalance(walletBalance - referralAmount);
+    }
+
+    const message = referralAmount > 0
+      ? `Your scrap pickup has been scheduled successfully!\n\n📋 Order Number: ${newOrder.orderNumber}\n💰 Estimated Value: ₹${estimatedAmount}\n🎁 Referral Bonus: +₹${referralAmount}\n💸 Total Payout: ₹${totalPayout}\n📅 Pickup: ${selectedDate} at ${selectedTime}\n\nOur team will arrive at your doorstep at the scheduled time.`
+      : `Your scrap pickup has been scheduled successfully!\n\n📋 Order Number: ${newOrder.orderNumber}\n💰 Total Amount: ₹${estimatedAmount}\n📅 Pickup: ${selectedDate} at ${selectedTime}\n\nOur team will arrive at your doorstep at the scheduled time.`;
+
     Alert.alert(
       '✅ Booking Confirmed!', 
-      `Your scrap pickup has been scheduled successfully!\n\n📋 Order Number: ${newOrder.orderNumber}\n💰 Total Amount: ₹${newOrder.totalAmount}\n📅 Pickup: ${selectedDate} at ${selectedTime}\n\nOur team will arrive at your doorstep at the scheduled time.`,
+      message,
       [
         { 
           text: '📦 View Orders', 
@@ -440,6 +514,10 @@ export default function SellScreen() {
           ))}
         </View>
       )}
+
+      {errors.items && (
+        <Text style={styles.errorTextCentered}>{errors.items}</Text>
+      )}
     </View>
   );
 
@@ -500,6 +578,10 @@ export default function SellScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      {errors.schedule && (
+        <Text style={styles.errorTextCentered}>{errors.schedule}</Text>
+      )}
     </View>
   );
 
@@ -560,7 +642,13 @@ export default function SellScreen() {
         <View style={styles.addressTabs}>
           <TouchableOpacity
             style={[styles.addressTab, useNewAddress && styles.addressTabActive]}
-            onPress={() => setUseNewAddress(true)}
+            onPress={() => {
+              setUseNewAddress(true);
+              // Clear saved address errors when switching to new address
+              if (errors.savedAddress) {
+                setErrors(prev => ({ ...prev, savedAddress: '' }));
+              }
+            }}
           >
             <Text style={[styles.addressTabText, useNewAddress && styles.addressTabTextActive]}>
               Add New Address
@@ -568,7 +656,16 @@ export default function SellScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.addressTab, !useNewAddress && styles.addressTabActive]}
-            onPress={() => setUseNewAddress(false)}
+            onPress={() => {
+              setUseNewAddress(false);
+              // Clear new address form errors when switching to saved address
+              const addressErrors = ['title', 'addressLine', 'city', 'pinCode'];
+              if (addressErrors.some(key => errors[key])) {
+                const newErrors = { ...errors };
+                addressErrors.forEach(key => delete newErrors[key]);
+                setErrors(newErrors);
+              }
+            }}
           >
             <Text style={[styles.addressTabText, !useNewAddress && styles.addressTabTextActive]}>
               Use Saved Address
@@ -649,18 +746,44 @@ export default function SellScreen() {
           </View>
         ) : (
           <View style={styles.savedAddresses}>
-            <TouchableOpacity style={styles.savedAddressCard}>
-              <View style={styles.savedAddressInfo}>
-                <Text style={styles.savedAddressTitle}>Home</Text>
-                <Text style={styles.savedAddressText}>
-                  123, Green Valley Apartment, Sector 21, Pune - 411001
+            {savedLocations.length > 0 ? (
+              savedLocations.map((location) => (
+                <TouchableOpacity 
+                  key={location.id}
+                  style={[
+                    styles.savedAddressCard,
+                    selectedSavedAddressId === location.id && styles.savedAddressCardActive
+                  ]}
+                  onPress={() => setSelectedSavedAddressId(location.id)}
+                >
+                  <View style={styles.savedAddressInfo}>
+                    <Text style={styles.savedAddressTitle}>
+                      {location.label || location.type.charAt(0).toUpperCase() + location.type.slice(1)}
+                    </Text>
+                    <Text style={styles.savedAddressText}>
+                      {location.address}, {location.city} - {location.pincode}
+                    </Text>
+                  </View>
+                  <View style={styles.savedAddressRadio}>
+                    {selectedSavedAddressId === location.id && (
+                      <View style={styles.radioSelected} />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View style={styles.noSavedAddress}>
+                <MapPin size={48} color="#9ca3af" />
+                <Text style={styles.noSavedAddressText}>No saved addresses yet</Text>
+                <Text style={styles.noSavedAddressSubtext}>
+                  Add addresses from Location Selector or use "Add New Address"
                 </Text>
               </View>
-              <View style={styles.savedAddressRadio}>
-                <View style={styles.radioSelected} />
-              </View>
-            </TouchableOpacity>
+            )}
           </View>
+        )}
+        {errors.savedAddress && !useNewAddress && (
+          <Text style={styles.errorText}>{errors.savedAddress}</Text>
         )}
       </View>
 
@@ -726,6 +849,68 @@ export default function SellScreen() {
         </View>
       </View>
 
+      {/* Referral Wallet Section */}
+      {walletBalance > 0 && (
+        <View style={styles.referralCard}>
+          <View style={styles.referralHeader}>
+            <View style={styles.referralHeaderLeft}>
+              <View style={styles.referralIconContainer}>
+                <Wallet size={20} color="#16a34a" />
+              </View>
+              <View>
+                <Text style={styles.referralTitle}>Referral Wallet</Text>
+                <Text style={styles.referralBalance}>₹{walletBalance} available</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.referralToggle,
+                useReferralBalance && styles.referralToggleActive
+              ]}
+              onPress={() => setUseReferralBalance(!useReferralBalance)}
+            >
+              <View style={[
+                styles.referralToggleCircle,
+                useReferralBalance && styles.referralToggleCircleActive
+              ]} />
+            </TouchableOpacity>
+          </View>
+          
+          {useReferralBalance && (
+            <View style={styles.referralDiscountInfo}>
+              <Text style={styles.referralDiscountText}>
+                💰 Referral Applied: +₹{getReferralDiscount()}
+              </Text>
+              <Text style={styles.referralDiscountSubtext}>
+                Bonus amount will be added to your total payout
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Final Amount Summary */}
+      {useReferralBalance && getReferralDiscount() > 0 && (
+        <View style={styles.finalAmountCard}>
+          <View style={styles.finalAmountRow}>
+            <Text style={styles.finalAmountLabel}>Estimated Value</Text>
+            <Text style={styles.finalAmountValue}>₹{getTotalAmount()}</Text>
+          </View>
+          <View style={styles.finalAmountRow}>
+            <Text style={styles.finalAmountLabelBonus}>Referral Bonus</Text>
+            <Text style={styles.finalAmountValueBonus}>+₹{getReferralDiscount()}</Text>
+          </View>
+          <View style={styles.finalAmountDivider} />
+          <View style={styles.finalAmountRow}>
+            <Text style={styles.finalAmountLabelFinal}>Total Payout</Text>
+            <Text style={styles.finalAmountValueFinal}>₹{getFinalAmount()}</Text>
+          </View>
+          <Text style={styles.finalAmountNote}>
+            💸 You will receive this amount from us
+          </Text>
+        </View>
+      )}
+
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Pickup Details</Text>
         <View style={styles.summaryDetail}>
@@ -735,15 +920,38 @@ export default function SellScreen() {
         <View style={styles.summaryDetail}>
           <MapPin size={16} color="#6b7280" />
           <View style={styles.summaryAddressContainer}>
-            {useNewAddress && addressForm.title && (
-              <Text style={styles.summaryAddressTitle}>{addressForm.title}</Text>
+            {getAddressTitle() && (
+              <Text style={styles.summaryAddressTitle}>{getAddressTitle()}</Text>
             )}
             <Text style={styles.summaryDetailText}>
-              {useNewAddress ? getFormattedAddress() : '123, Green Valley Apartment, Sector 21, Pune - 411001'}
+              {getDisplayAddress()}
             </Text>
           </View>
         </View>
       </View>
+
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Contact Information</Text>
+        <View style={styles.summaryDetail}>
+          <User size={16} color="#6b7280" />
+          <Text style={styles.summaryDetailText}>{contactForm.name}</Text>
+        </View>
+        <View style={styles.summaryDetail}>
+          <Phone size={16} color="#6b7280" />
+          <Text style={styles.summaryDetailText}>{contactForm.mobile}</Text>
+        </View>
+      </View>
+
+      {selectedImages.length > 0 && (
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Attached Photos</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.summaryImagesScroll}>
+            {selectedImages.map((uri, index) => (
+              <Image key={index} source={{ uri }} style={styles.summaryImage} />
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 
@@ -1213,7 +1421,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     borderRadius: 12,
     borderWidth: 2,
+    borderColor: '#e5e7eb',
+  },
+  savedAddressCardActive: {
     borderColor: '#16a34a',
+    backgroundColor: '#f0fdf4',
   },
   savedAddressInfo: {
     flex: 1,
@@ -1245,6 +1457,31 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     backgroundColor: '#16a34a',
+  },
+  noSavedAddress: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e5e7eb',
+    borderStyle: 'dashed',
+  },
+  noSavedAddressText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+    fontFamily: 'Inter-SemiBold',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  noSavedAddressSubtext: {
+    fontSize: 14,
+    color: '#9ca3af',
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   photoButton: {
     backgroundColor: 'white',
@@ -1352,6 +1589,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     marginBottom: 2,
   },
+  summaryImagesScroll: {
+    marginTop: 12,
+  },
+  summaryImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 12,
+  },
   footer: {
     backgroundColor: 'white',
     padding: 20,
@@ -1451,6 +1697,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     marginTop: 4,
   },
+  errorTextCentered: {
+    fontSize: 14,
+    color: '#dc2626',
+    fontFamily: 'Inter-SemiBold',
+    marginTop: 16,
+    textAlign: 'center',
+    backgroundColor: '#fee2e2',
+    padding: 12,
+    borderRadius: 8,
+  },
   mobileInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1525,5 +1781,161 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  referralCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#dcfce7',
+    shadowColor: '#16a34a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  referralHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  referralHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  referralIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#dcfce7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  referralTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+  },
+  referralBalance: {
+    fontSize: 14,
+    color: '#16a34a',
+    fontFamily: 'Inter-Medium',
+    marginTop: 2,
+  },
+  referralToggle: {
+    width: 52,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#e5e7eb',
+    padding: 3,
+    justifyContent: 'center',
+  },
+  referralToggleActive: {
+    backgroundColor: '#16a34a',
+  },
+  referralToggleCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'white',
+  },
+  referralToggleCircleActive: {
+    alignSelf: 'flex-end',
+  },
+  referralDiscountInfo: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  referralDiscountText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 4,
+  },
+  referralDiscountSubtext: {
+    fontSize: 13,
+    color: '#15803d',
+    fontFamily: 'Inter-Regular',
+  },
+  finalAmountCard: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: '#16a34a',
+  },
+  finalAmountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  finalAmountLabel: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontFamily: 'Inter-Medium',
+  },
+  finalAmountValue: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontFamily: 'Inter-SemiBold',
+  },
+  finalAmountLabelDiscount: {
+    fontSize: 14,
+    color: '#16a34a',
+    fontFamily: 'Inter-Medium',
+  },
+  finalAmountValueDiscount: {
+    fontSize: 14,
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+  },
+  finalAmountLabelBonus: {
+    fontSize: 14,
+    color: '#16a34a',
+    fontFamily: 'Inter-Medium',
+  },
+  finalAmountValueBonus: {
+    fontSize: 14,
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+  },
+  finalAmountDivider: {
+    height: 1,
+    backgroundColor: '#16a34a',
+    marginVertical: 12,
+    opacity: 0.3,
+  },
+  finalAmountLabelFinal: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+  },
+  finalAmountValueFinal: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+  },
+  finalAmountNote: {
+    fontSize: 12,
+    color: '#15803d',
+    fontFamily: 'Inter-Medium',
+    textAlign: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#bbf7d0',
   },
 });

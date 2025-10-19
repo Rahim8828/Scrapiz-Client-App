@@ -13,24 +13,26 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Gift, Users, IndianRupee, Share2, Copy, MessageCircle, Wallet, CheckCircle, Info } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useReferral } from '../../contexts/ReferralContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ReferFriendsScreen() {
   const router = useRouter();
+  const { 
+    walletBalance, 
+    pendingBalance, 
+    totalReferrals, 
+    successfulReferrals 
+  } = useReferral();
+  
   const referralCode = 'SCRAPIZ2024';
   const referralLink = `https://scrapiz.in/ref/${referralCode}`;
-  
-  // User's referral wallet data
-  const [walletBalance, setWalletBalance] = useState(120); // Total earned
-  const [pendingBalance, setPendingBalance] = useState(40); // Pending verification
-  const [totalReferrals, setTotalReferrals] = useState(6);
-  const [successfulReferrals, setSuccessfulReferrals] = useState(6);
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `🌱 Join me on Scrapiz - India's #1 Scrap Selling Platform!\n\n💰 Use my code: ${referralCode}\n🎁 You get ₹20 off on first order (min ₹500)\n🎁 I earn ₹20 when you complete pickup\n\n♻️ Turn your scrap into cash instantly!\n\n📲 Download now: ${referralLink}`,
+        message: `🌱 Join me on Scrapiz - India's #1 Scrap Selling Platform!\n\n💰 Use my code: ${referralCode}\n🎁 You get ₹10 off on first order (min ₹500)\n🎁 I earn ₹10 when you complete pickup\n\n♻️ Turn your scrap into cash instantly!\n\n📲 Download now: ${referralLink}`,
         title: 'Earn with Scrapiz - Sell Scrap, Earn Money!',
       });
     } catch (error) {
@@ -49,7 +51,7 @@ export default function ReferFriendsScreen() {
   };
 
   const handleWhatsAppShare = () => {
-    const message = `🌱 Join me on Scrapiz - India's #1 Scrap Selling Platform!\n\n💰 Use my code: ${referralCode}\n🎁 You get ₹20 off on first order (min ₹500)\n🎁 I earn ₹20 when you complete pickup\n\n♻️ Turn your scrap into cash instantly!\n\n📲 Download now: ${referralLink}`;
+    const message = `🌱 Join me on Scrapiz - India's #1 Scrap Selling Platform!\n\n💰 Use my code: ${referralCode}\n🎁 You get ₹10 off on first order (min ₹500)\n🎁 I earn ₹10 when you complete pickup\n\n♻️ Turn your scrap into cash instantly!\n\n📲 Download now: ${referralLink}`;
     // In real app, use Linking.openURL with WhatsApp deep link
     Alert.alert('WhatsApp Share', 'Opening WhatsApp...');
   };
@@ -133,7 +135,7 @@ export default function ReferFriendsScreen() {
             <View style={styles.statIconContainer}>
               <IndianRupee size={20} color="#16a34a" />
             </View>
-            <Text style={styles.statNumber}>₹20</Text>
+            <Text style={styles.statNumber}>₹10</Text>
             <Text style={styles.statLabel}>Per Referral</Text>
           </View>
         </View>
@@ -181,7 +183,7 @@ export default function ReferFriendsScreen() {
               <View style={styles.stepContent}>
                 <Text style={styles.stepTitle}>Both Earn Rewards!</Text>
                 <Text style={styles.stepDesc}>
-                  You get ₹20 in wallet • Your friend gets ₹20 discount on their first order
+                  You get ₹10 in wallet • Your friend gets ₹10 discount on their first order
                 </Text>
               </View>
             </View>
@@ -240,7 +242,7 @@ export default function ReferFriendsScreen() {
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>Smart Savings</Text>
               <Text style={styles.benefitDesc}>
-                Your ₹20 earnings auto-adjust on next pickup - no manual redemption needed!
+                Your ₹10 earnings auto-adjust on next pickup - no manual redemption needed!
               </Text>
             </View>
           </View>
@@ -264,7 +266,7 @@ export default function ReferFriendsScreen() {
             <View style={styles.benefitContent}>
               <Text style={styles.benefitTitle}>No Limits</Text>
               <Text style={styles.benefitDesc}>
-                Refer unlimited friends and keep earning ₹20 per successful referral
+                Refer unlimited friends and keep earning ₹10 per successful referral
               </Text>
             </View>
           </View>
@@ -280,7 +282,7 @@ export default function ReferFriendsScreen() {
             <Text style={styles.infoText}>
               ✓ Friend must use your code during signup{'\n'}
               ✓ First order must be minimum ₹500{'\n'}
-              ✓ ₹20 credited after successful pickup verification{'\n'}
+              ✓ ₹10 credited after successful pickup verification{'\n'}
               ✓ Balance auto-adjusts on your next booking{'\n'}
               ✓ Valid for genuine referrals only
             </Text>

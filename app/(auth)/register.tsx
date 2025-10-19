@@ -10,6 +10,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  SafeAreaView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {
   User,
@@ -20,6 +23,8 @@ import {
   ArrowRight,
   Chrome,
   Phone,
+  Gift,
+  ArrowLeft,
 } from 'lucide-react-native';
 import { Link, useRouter } from 'expo-router';
 import ScrapizLogo from '@/components/ScrapizLogo';
@@ -34,6 +39,7 @@ export default function RegisterScreen() {
     phone: '',
     password: '',
     confirmPassword: '',
+    referralCode: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -51,14 +57,14 @@ export default function RegisterScreen() {
     
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      newErrors.email = 'Please enter a valid email address';
     }
     
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^\+?[\d\s-()]{10,}$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    } else if (!/^[6-9]\d{9}$/.test(formData.phone.replace(/[\s\-()]/g, ''))) {
+      newErrors.phone = 'Please enter a valid 10-digit Indian mobile number';
     }
     
     if (!formData.password.trim()) {
@@ -74,16 +80,40 @@ export default function RegisterScreen() {
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
+
+    // Referral code validation (optional field)
+    if (formData.referralCode.trim()) {
+      const referralCode = formData.referralCode.trim().toUpperCase();
+      // Validate format: Should be alphanumeric, 6-10 characters
+      if (!/^[A-Z0-9]{6,10}$/.test(referralCode)) {
+        newErrors.referralCode = 'Invalid referral code format';
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // Auto-uppercase referral code as user types
+    if (field === 'referralCode') {
+      value = value.toUpperCase();
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const verifyReferralCode = async (code: string): Promise<boolean> => {
+    // Simulate API call to verify referral code
+    // In production, this would check against your database
+    const validCodes = ['SCRAP2024', 'REFER123', 'GREEN100', 'ECO2024'];
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return validCodes.includes(code.toUpperCase());
   };
 
   const handleRegister = async () => {
@@ -92,21 +122,60 @@ export default function RegisterScreen() {
     setIsLoading(true);
     
     try {
+      // Verify referral code if provided
+      let referralBonus = 0;
+      if (formData.referralCode.trim()) {
+        const isValidReferral = await verifyReferralCode(formData.referralCode);
+        
+        if (!isValidReferral) {
+          Alert.alert(
+            'Invalid Referral Code',
+            'The referral code you entered is invalid. You can continue without it or enter a valid code.',
+            [
+              {
+                text: 'Continue Without Code',
+                onPress: () => completeRegistration(0),
+              },
+              {
+                text: 'Try Again',
+                style: 'cancel',
+              },
+            ]
+          );
+          setIsLoading(false);
+          return;
+        }
+        referralBonus = 10; // ₹10 bonus for valid referral
+      }
+      
+      await completeRegistration(referralBonus);
+    } catch (error) {
+      Alert.alert('Error', 'Registration failed. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const completeRegistration = async (referralBonus: number) => {
+    try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const successMessage = referralBonus > 0
+        ? `Your account has been created successfully! You've earned ₹${referralBonus} referral bonus. Please sign in to continue.`
+        : 'Your account has been created successfully. Please sign in to continue.';
       
       Alert.alert(
-        'Success!', 
-        'Your account has been created successfully. Please sign in to continue.',
+        'Success!',
+        successMessage,
         [
-          { 
-            text: 'Sign In', 
+          {
+            text: 'Sign In',
             onPress: () => router.replace('/(auth)/login')
           }
         ]
       );
     } catch (error) {
-      Alert.alert('Error', 'Registration failed. Please try again.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -130,23 +199,38 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <ScrapizLogo width={240} />
-          <Text style={styles.welcomeText}>Create Account</Text>
-          <Text style={styles.subtitleText}>
-            Join thousands of users earning money while helping the environment
-          </Text>
+        {/* Back Button */}
+        <View style={styles.backButtonContainer}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+            disabled={isLoading}
+          >
+            <ArrowLeft size={24} color="#111827" />
+          </TouchableOpacity>
         </View>
+
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              {/* Header */}
+              <View style={styles.header}>
+                <ScrapizLogo width={220} />
+                <Text style={styles.welcomeText}>Create Account</Text>
+                <Text style={styles.subtitleText}>
+                  Join thousands of users earning money while helping the environment
+                </Text>
+              </View>
 
         {/* Registration Form */}
         <View style={styles.formContainer}>
@@ -177,6 +261,7 @@ export default function RegisterScreen() {
                 placeholderTextColor="#9ca3af"
                 value={formData.email}
                 onChangeText={(text) => handleInputChange('email', text)}
+                onBlur={() => setFormData(prev => ({ ...prev, email: prev.email.trim() }))}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -192,16 +277,47 @@ export default function RegisterScreen() {
               <Phone size={20} color="#6b7280" style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, errors.phone && styles.inputError]}
-                placeholder="Phone Number"
+                placeholder="Phone Number (10 digits)"
                 placeholderTextColor="#9ca3af"
                 value={formData.phone}
-                onChangeText={(text) => handleInputChange('phone', text)}
-                keyboardType="phone-pad"
+                onChangeText={(text) => {
+                  // Only allow numbers and limit to 10 digits
+                  const cleaned = text.replace(/\D/g, '');
+                  if (cleaned.length <= 10) {
+                    handleInputChange('phone', cleaned);
+                  }
+                }}
+                keyboardType="number-pad"
+                maxLength={10}
                 autoComplete="tel"
               />
             </View>
             {errors.phone && (
               <Text style={styles.errorText}>{errors.phone}</Text>
+            )}
+          </View>
+
+          {/* Referral Code Input */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Gift size={20} color="#22c55e" style={styles.inputIcon} />
+              <TextInput
+                style={[styles.input, errors.referralCode && styles.inputError]}
+                placeholder="Referral Code (Optional)"
+                placeholderTextColor="#9ca3af"
+                value={formData.referralCode}
+                onChangeText={(text) => handleInputChange('referralCode', text)}
+                autoCapitalize="characters"
+                maxLength={10}
+              />
+            </View>
+            {errors.referralCode && (
+              <Text style={styles.errorText}>{errors.referralCode}</Text>
+            )}
+            {!errors.referralCode && formData.referralCode.trim() && (
+              <Text style={styles.referralHintText}>
+                🎁 You'll get ₹10 bonus on your first order!
+              </Text>
             )}
           </View>
 
@@ -310,75 +426,102 @@ export default function RegisterScreen() {
             </TouchableOpacity>
           </Link>
         </View>
+            </View>
+          </TouchableWithoutFeedback>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
   },
+  backButtonContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 10 : 16,
+    left: 20,
+    zIndex: 10,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
+    paddingTop: 80,
     paddingBottom: 40,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#111827',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Inter-Bold',
     marginBottom: 8,
-    marginTop: 20,
+    marginTop: 16,
   },
   subtitleText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
     textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 320,
+    lineHeight: 22,
+    maxWidth: 300,
   },
   formContainer: {
     flex: 1,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 18,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 16,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: '#e5e7eb',
     paddingHorizontal: 16,
     height: 56,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   inputIcon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     color: '#111827',
     fontFamily: 'Inter-Regular',
   },
   inputError: {
     borderColor: '#ef4444',
+    borderWidth: 1.5,
   },
   eyeIcon: {
     padding: 4,
@@ -386,28 +529,35 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     color: '#ef4444',
-    fontFamily: 'Inter-Regular',
+    fontFamily: 'Inter-Medium',
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  referralHintText: {
+    fontSize: 12,
+    color: '#22c55e',
+    fontFamily: 'Inter-Medium',
     marginTop: 6,
     marginLeft: 4,
   },
   registerButton: {
     backgroundColor: '#16a34a',
-    borderRadius: 16,
+    borderRadius: 14,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     shadowColor: '#16a34a',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-    marginTop: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 5,
+    marginTop: 12,
     marginBottom: 24,
   },
   registerButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   registerButtonText: {
     fontSize: 16,
@@ -433,23 +583,23 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 14,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#e5e7eb',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
     marginBottom: 20,
   },
   googleButtonDisabled: {
-    opacity: 0.7,
+    opacity: 0.6,
   },
   googleButtonText: {
     fontSize: 16,

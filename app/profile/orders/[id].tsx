@@ -152,12 +152,30 @@ export default function OrderDetailScreen() {
                 </View>
               ))}
               <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total Amount</Text>
+                <Text style={styles.totalLabel}>Estimated Value</Text>
                 <View style={styles.totalAmount}>
-                  <IndianRupee size={18} color="#16a34a" />
+                  <IndianRupee size={18} color="#6b7280" />
                   <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
                 </View>
               </View>
+              {order.referralBonus && order.referralBonus > 0 && (
+                <>
+                  <View style={styles.referralRow}>
+                    <Text style={styles.referralLabel}>🎁 Referral Bonus</Text>
+                    <View style={styles.referralAmount}>
+                      <Text style={styles.referralValue}>+₹{order.referralBonus}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.finalRow}>
+                    <Text style={styles.finalLabel}>Total Payout</Text>
+                    <View style={styles.finalAmount}>
+                      <IndianRupee size={20} color="#16a34a" strokeWidth={2.5} />
+                      <Text style={styles.finalValue}>₹{order.finalAmount || order.totalAmount}</Text>
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           </View>
         )}
@@ -618,6 +636,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#92400e',
+    fontFamily: 'Inter-SemiBold',
+  },
+  referralRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 8,
+  },
+  referralLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+  },
+  referralAmount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  referralValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#16a34a',
+    marginVertical: 12,
+    marginHorizontal: 16,
+    opacity: 0.2,
+  },
+  finalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#dcfce7',
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  finalLabel: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+  },
+  finalAmount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  finalValue: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
   },
 });
