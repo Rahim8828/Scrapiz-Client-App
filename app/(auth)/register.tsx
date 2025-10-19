@@ -141,7 +141,7 @@ export default function RegisterScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <ScrapizLogo width={56} />
+          <ScrapizLogo width={240} />
           <Text style={styles.welcomeText}>Create Account</Text>
           <Text style={styles.subtitleText}>
             Join thousands of users earning money while helping the environment

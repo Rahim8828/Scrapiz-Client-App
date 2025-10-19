@@ -1,26 +1,29 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
+import SplashScreen from '../components/SplashScreen';
 
 export default function IndexScreen() {
   const router = useRouter();
+  const [showSplash, setShowSplash] = useState(true);
 
-  useEffect(() => {
-    // For demo purposes, always redirect to auth
+  const handleSplashFinish = () => {
+    setShowSplash(false);
+    
+    // Check authentication state
     // In a real app, you'd check authentication state here
-    const checkAuthState = async () => {
-      // Simulate checking authentication state
-      const isAuthenticated = false; // This would come from your auth service
-      
-      if (isAuthenticated) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/(auth)/login');
-      }
-    };
+    const isAuthenticated = false; // This would come from your auth service
+    
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    } else {
+      router.replace('/(auth)/login');
+    }
+  };
 
-    checkAuthState();
-  }, []);
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
 
   return <View style={styles.container} />;
 }

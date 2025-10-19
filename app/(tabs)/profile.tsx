@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,11 +9,15 @@ import {
   Alert,
   Linking,
   StatusBar,
+  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { User, MapPin, Bell, Shield, CircleHelp as HelpCircle, Star, Gift, ChevronRight, Award, LogOut, Phone, Mail, Package, Clock, CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useProfile } from '../../contexts/ProfileContext';
+import { useFocusEffect } from '@react-navigation/native';
 
 const profileData = {
   name: 'Anas Farooqui',
@@ -46,6 +50,23 @@ type MenuSection = {
 export default function ProfileScreen() {
   const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { profile, loadProfile, isLoading } = useProfile();
+
+  // Reload profile when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      loadProfile();
+    }, [])
+  );
+
+  const getInitials = () => {
+    return profile.fullName
+      .split(' ')
+      .filter(n => n.length > 0)
+      .map(n => n[0].toUpperCase())
+      .join('')
+      .slice(0, 2);
+  };
 
   const handleNavigation = (path: string) => {
     router.push(path as any);
@@ -146,12 +167,23 @@ export default function ProfileScreen() {
           style={styles.header}
         >
           <View style={styles.profileContainer}>
-              <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{profileData.avatar}</Text>
-              </View>
+              {isLoading ? (
+                <View style={styles.avatar}>
+                  <ActivityIndicator size="small" color="white" />
+                </View>
+              ) : profile.profileImage ? (
+                <Image 
+                  source={{ uri: profile.profileImage }} 
+                  style={styles.avatarImage}
+                />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{getInitials()}</Text>
+                </View>
+              )}
               <View style={styles.profileInfo}>
-                  <Text style={styles.profileName}>{profileData.name}</Text>
-                  <Text style={styles.profileEmail}>{profileData.email}</Text>
+                  <Text style={styles.profileName}>{profile.fullName}</Text>
+                  <Text style={styles.profileEmail}>{profile.email}</Text>
               </View>
           </View>
         </LinearGradient>
@@ -214,7 +246,7 @@ export default function ProfileScreen() {
       <View style={styles.section}>
         <TouchableOpacity 
           style={styles.logoutButton}
-          onPress={() => Alert.alert('Logout', 'Are you sure you want to logout?')}
+          onPress={handleLogout}
         >
           <LogOut size={20} color="#dc2626" />
           <Text style={styles.logoutText}>Logout</Text>
@@ -251,6 +283,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     marginRight: 16,
     borderWidth: 2,
     borderColor: 'white',

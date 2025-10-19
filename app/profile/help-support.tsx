@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,74 +7,121 @@ import {
   TouchableOpacity,
   Linking,
   Alert,
+  Platform,
 } from 'react-native';
-import { ArrowLeft, MessageCircle, Phone, Mail, CircleHelp as HelpCircle, FileText, ChevronRight } from 'lucide-react-native';
+import { ArrowLeft, MessageCircle, Phone, Mail, CircleHelp as HelpCircle, FileText, ChevronRight, ChevronDown, MessageSquare } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 export default function HelpSupportScreen() {
   const router = useRouter();
+  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
-  const handleContactSupport = (method: string) => {
-    switch (method) {
-      case 'phone':
-        Linking.openURL('tel:+918765432100');
-        break;
-      case 'email':
-        Linking.openURL('mailto:support@scrapiz.com');
-        break;
-      case 'chat':
-        Alert.alert('Live Chat', 'This would open live chat in a real app.');
-        break;
+  const handleContactSupport = async (method: string, value: string) => {
+    try {
+      let url = '';
+      let canOpen = false;
+
+      switch (method) {
+        case 'phone':
+          url = `tel:${value}`;
+          canOpen = await Linking.canOpenURL(url);
+          break;
+        case 'email':
+          url = `mailto:${value}`;
+          canOpen = await Linking.canOpenURL(url);
+          break;
+        case 'whatsapp':
+          // Remove + and spaces from phone number
+          const cleanNumber = value.replace(/[\s+]/g, '');
+          url = `whatsapp://send?phone=${cleanNumber}`;
+          canOpen = await Linking.canOpenURL(url);
+          if (!canOpen) {
+            // Fallback to web WhatsApp
+            url = `https://wa.me/${cleanNumber}`;
+            canOpen = true;
+          }
+          break;
+      }
+
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert(
+          'Unable to Open',
+          `Unable to open ${method}. Please make sure you have the app installed.`
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        `Failed to open ${method}. Please try again or use an alternative contact method.`
+      );
     }
+  };
+
+  const toggleFAQ = (index: number) => {
+    setExpandedFAQ(expandedFAQ === index ? null : index);
   };
 
   const contactMethods = [
     {
       icon: Phone,
       title: 'Call Us',
-      subtitle: '+91 87654 32100',
+      subtitle: '+91 88287 00630',
       description: 'Available 9 AM - 6 PM, Mon-Sat',
-      action: () => handleContactSupport('phone'),
+      action: () => handleContactSupport('phone', '+918828700630'),
       color: '#16a34a',
-    },
-    {
-      icon: MessageCircle,
-      title: 'Live Chat',
-      subtitle: 'Chat with our support team',
-      description: 'Average response time: 2 minutes',
-      action: () => handleContactSupport('chat'),
-      color: '#3b82f6',
     },
     {
       icon: Mail,
       title: 'Email Support',
-      subtitle: 'support@scrapiz.com',
+      subtitle: 'Support@scrapiz.in',
       description: 'We respond within 24 hours',
-      action: () => handleContactSupport('email'),
+      action: () => handleContactSupport('email', 'Support@scrapiz.in'),
       color: '#f59e0b',
+    },
+    {
+      icon: MessageSquare,
+      title: 'WhatsApp Chat',
+      subtitle: '+91 88287 00630',
+      description: 'Quick responses during business hours',
+      action: () => handleContactSupport('whatsapp', '+918828700630'),
+      color: '#25D366',
     },
   ];
 
   const faqItems = [
     {
       question: 'How do I schedule a pickup?',
-      answer: 'Go to the Sell tab, select your items, choose date and time, and confirm your address.',
+      answer: 'Go to the Sell tab, select your items, choose date and time, and confirm your address. You can also add photos of your scrap items for better pricing estimates.',
     },
     {
       question: 'What types of scrap do you accept?',
-      answer: 'We accept paper, plastic, metal, electronics, glass, and textiles. Check our rates page for details.',
+      answer: 'We accept paper (newspapers, cardboard, books), plastic (bottles, containers), metal (aluminium, copper, brass, iron), electronics (laptops, phones, appliances), glass, and textiles. Check our Rates page for the complete list and current prices.',
     },
     {
       question: 'How is the payment calculated?',
-      answer: 'Payment is based on current market rates and the weight of materials collected.',
+      answer: 'Payment is based on current market rates and the weight of materials collected. You can see estimated prices in the Rates section. Our team will weigh items at pickup and provide the final amount.',
     },
     {
       question: 'When will I receive payment?',
-      answer: 'Payment is processed within 24-48 hours after pickup completion.',
+      answer: 'Payment is processed immediately after pickup completion. You can choose your preferred payment method: UPI, bank transfer, or cash. Digital payments are instant, bank transfers take 24-48 hours.',
     },
     {
       question: 'Can I cancel or reschedule a pickup?',
-      answer: 'Yes, you can cancel or reschedule up to 2 hours before the scheduled time.',
+      answer: 'Yes, you can cancel or reschedule up to 2 hours before the scheduled time. Go to Profile → Orders, select your order, and tap on Cancel or Reschedule. No charges for cancellation.',
+    },
+    {
+      question: 'Is there a minimum quantity requirement?',
+      answer: 'Yes, minimum 20kg of scrap is required for doorstep pickup. For smaller quantities, you can drop off at our collection centers or combine with your next pickup.',
+    },
+    {
+      question: 'What areas do you service?',
+      answer: 'We currently serve Mumbai. We\'re expanding to more cities soon. Check the location selector for availability in your area.',
+    },
+    {
+      question: 'How do I track my order?',
+      answer: 'Go to Profile → Orders to see all your pickups. You can track status in real-time: Pending, Scheduled, In Progress, or Completed. You\'ll receive notifications for status updates.',
     },
   ];
 
@@ -83,13 +130,35 @@ export default function HelpSupportScreen() {
       icon: FileText,
       title: 'User Guide',
       subtitle: 'Complete guide to using Scrapiz',
-      action: () => Alert.alert('User Guide', 'This would open the user guide.'),
+      action: () => {
+        Alert.alert(
+          'User Guide',
+          'Our comprehensive user guide covers:\n\n• Getting started with Scrapiz\n• How to schedule pickups\n• Understanding rates\n• Payment methods\n• Order tracking\n• Tips for best prices\n\nWould you like us to email you the complete guide?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Email Me', 
+              onPress: () => handleContactSupport('email', 'Support@scrapiz.in')
+            }
+          ]
+        );
+      },
     },
     {
-      icon: HelpCircle,
-      title: 'FAQ',
-      subtitle: 'Frequently asked questions',
-      action: () => {},
+      icon: MessageCircle,
+      title: 'Submit Feedback',
+      subtitle: 'Help us improve our service',
+      action: () => {
+        Alert.alert(
+          'Submit Feedback',
+          'We value your feedback! How would you like to share your thoughts?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Email', onPress: () => handleContactSupport('email', 'Support@scrapiz.in') },
+            { text: 'WhatsApp', onPress: () => handleContactSupport('whatsapp', '+918828700630') }
+          ]
+        );
+      },
     },
   ];
 
@@ -143,25 +212,42 @@ export default function HelpSupportScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
+          <Text style={styles.sectionSubtitle}>Tap on any question to view the answer</Text>
           {faqItems.map((faq, index) => (
-            <View key={index} style={styles.faqCard}>
-              <Text style={styles.faqQuestion}>{faq.question}</Text>
-              <Text style={styles.faqAnswer}>{faq.answer}</Text>
-            </View>
+            <TouchableOpacity 
+              key={index} 
+              style={styles.faqCard}
+              onPress={() => toggleFAQ(index)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.faqHeader}>
+                <Text style={styles.faqQuestion}>{faq.question}</Text>
+                <View style={styles.faqIconContainer}>
+                  {expandedFAQ === index ? (
+                    <ChevronDown size={20} color="#16a34a" />
+                  ) : (
+                    <ChevronRight size={20} color="#9ca3af" />
+                  )}
+                </View>
+              </View>
+              {expandedFAQ === index && (
+                <Text style={styles.faqAnswer}>{faq.answer}</Text>
+              )}
+            </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.emergencyCard}>
           <Text style={styles.emergencyTitle}>Need Immediate Help?</Text>
           <Text style={styles.emergencyText}>
-            For urgent issues or emergencies, please call our 24/7 helpline
+            For urgent issues during business hours (9 AM - 6 PM), call our support team
           </Text>
           <TouchableOpacity 
             style={styles.emergencyButton}
-            onPress={() => handleContactSupport('phone')}
+            onPress={() => handleContactSupport('phone', '+918828700630')}
           >
             <Phone size={20} color="white" />
-            <Text style={styles.emergencyButtonText}>Call Emergency Support</Text>
+            <Text style={styles.emergencyButtonText}>Call Support Now</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -217,6 +303,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
+    marginBottom: 8,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontFamily: 'Inter-Regular',
     marginBottom: 16,
   },
   contactCard: {
@@ -321,18 +413,36 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 1,
   },
+  faqHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   faqQuestion: {
     fontSize: 14,
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 8,
+    flex: 1,
+    marginRight: 12,
+  },
+  faqIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f3f4f6',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   faqAnswer: {
     fontSize: 14,
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
     lineHeight: 20,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
   },
   emergencyCard: {
     backgroundColor: '#dc2626',

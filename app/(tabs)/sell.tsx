@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,9 +25,11 @@ import {
   X,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { scrapData, getAverageRate, type ScrapItem } from '../../data/scrapData';
 import { addOrder, type OrderItem } from '../../data/orderData';
+
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
@@ -57,6 +59,7 @@ const stepTitles = [
 
 export default function SellScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [selectedItems, setSelectedItems] = useState<SelectedScrapItem[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState('');
@@ -75,6 +78,45 @@ export default function SellScreen() {
   const [useNewAddress, setUseNewAddress] = useState(true);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [hasProcessedParams, setHasProcessedParams] = useState(false);
+
+  // Handle pre-selected item from search
+  useEffect(() => {
+    if (params.preSelectedItem && params.preSelectedCategory && !hasProcessedParams) {
+      const itemName = params.preSelectedItem as string;
+      const categoryTitle = params.preSelectedCategory as string;
+      
+      // Find the category and item
+      const category = scrapData.find(cat => cat.title === categoryTitle);
+      if (category) {
+        const item = category.items.find(i => i.name === itemName);
+        if (item) {
+          // Check if item is not already selected
+          const itemId = `${category.id}-${item.name}`;
+          
+          // Use functional update to avoid dependency on selectedItems
+          setSelectedItems(prevItems => {
+            const alreadyExists = prevItems.some(selectedItem => selectedItem.id === itemId);
+            
+            if (!alreadyExists) {
+              const newSelectedItem: SelectedScrapItem = {
+                ...item,
+                categoryId: category.id,
+                categoryColor: category.color,
+                quantity: 1,
+                id: itemId,
+                icon: category.icon
+              };
+              return [...prevItems, newSelectedItem];
+            }
+            return prevItems;
+          });
+          
+          setHasProcessedParams(true);
+        }
+      }
+    }
+  }, [params.preSelectedItem, params.preSelectedCategory, hasProcessedParams]);
 
   const pickImage = async () => {
     // Ask for permission
@@ -160,26 +202,26 @@ export default function SellScreen() {
     const newErrors: {[key: string]: string} = {};
 
     if (currentStep === 1 && selectedItems.length === 0) {
-      newErrors.items = 'Please select at least one item to sell';
+      newErrors.items = '📦 Please select at least one item to sell';
     }
 
     if (currentStep === 2 && (!selectedDate || !selectedTime)) {
-      newErrors.schedule = 'Please select date and time for pickup';
+      newErrors.schedule = '📅 Please select date and time for pickup';
     }
 
     if (currentStep === 3) {
       if (useNewAddress) {
-        if (!addressForm.title.trim()) newErrors.title = 'Address title is required';
-        if (!addressForm.addressLine.trim()) newErrors.addressLine = 'Address line is required';
-        if (!addressForm.city.trim()) newErrors.city = 'City is required';
-        if (!addressForm.pinCode.trim()) newErrors.pinCode = 'PIN code is required';
-        else if (!/^\d{6}$/.test(addressForm.pinCode)) newErrors.pinCode = 'PIN code must be 6 digits';
+        if (!addressForm.title.trim()) newErrors.title = '🏠 Address title is required';
+        if (!addressForm.addressLine.trim()) newErrors.addressLine = '📍 Address line is required';
+        if (!addressForm.city.trim()) newErrors.city = '🏙️ City is required';
+        if (!addressForm.pinCode.trim()) newErrors.pinCode = '📮 PIN code is required';
+        else if (!/^\d{6}$/.test(addressForm.pinCode)) newErrors.pinCode = '📮 PIN code must be 6 digits';
       }
       
-      if (!contactForm.name.trim()) newErrors.name = 'Name is required';
-      if (!contactForm.mobile.trim()) newErrors.mobile = 'Mobile number is required';
+      if (!contactForm.name.trim()) newErrors.name = '👤 Name is required';
+      if (!contactForm.mobile.trim()) newErrors.mobile = '📱 Mobile number is required';
       else if (!validateMobileNumber(contactForm.mobile)) {
-        newErrors.mobile = 'Please enter a valid 10-digit mobile number';
+        newErrors.mobile = '📱 Please enter a valid 10-digit mobile number';
       }
     }
 
@@ -203,27 +245,33 @@ export default function SellScreen() {
       name: 'Rajesh Kumar',
       mobile: '+91 98765 43210'
     });
+    setUseNewAddress(true);
     setErrors({});
     setSelectedImages([]);
+    setHasProcessedParams(false); // Reset the flag for new searches
   };
 
   const handleNext = () => {
-    if (!validateForm()) {
-      const errorMessages = Object.values(errors);
-      if (errorMessages.length > 0) {
-        Alert.alert('Validation Error', errorMessages[0]);
-      }
-      return;
-    }
+    // Clear previous errors when moving to next step
+    setErrors({});
     
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleOrderSubmission();
-    }
+    // Use setTimeout to ensure errors are cleared before validation
+    setTimeout(() => {
+      if (!validateForm()) {
+        return;
+      }
+      
+      if (currentStep < 4) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        handleOrderSubmission();
+      }
+    }, 0);
   };
 
   const handlePrevious = () => {
+    // Clear errors when going back
+    setErrors({});
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
@@ -242,6 +290,7 @@ export default function SellScreen() {
 
     // Create the order
     const newOrder = addOrder({
+      type: 'scrap',
       status: 'scheduled',
       items: orderItems,
       totalAmount: getTotalAmount(),
@@ -255,18 +304,18 @@ export default function SellScreen() {
     });
 
     Alert.alert(
-      'Success!', 
-      `Your pickup has been scheduled successfully!\n\nOrder Number: ${newOrder.orderNumber}\nTotal Amount: ₹${newOrder.totalAmount}`,
+      '✅ Booking Confirmed!', 
+      `Your scrap pickup has been scheduled successfully!\n\n📋 Order Number: ${newOrder.orderNumber}\n💰 Total Amount: ₹${newOrder.totalAmount}\n📅 Pickup: ${selectedDate} at ${selectedTime}\n\nOur team will arrive at your doorstep at the scheduled time.`,
       [
         { 
-          text: 'View Orders', 
+          text: '📦 View Orders', 
           onPress: () => {
             resetForm();
             router.push('/(tabs)/profile');
           }
         },
         {
-          text: 'Schedule Another',
+          text: '✨ Schedule Another',
           onPress: () => {
             resetForm();
           }
@@ -283,12 +332,20 @@ export default function SellScreen() {
             styles.stepCircle,
             currentStep >= step && styles.stepCircleActive
           ]}>
-            <Text style={[
-              styles.stepNumber,
-              currentStep >= step && styles.stepNumberActive
-            ]}>
-              {step}
-            </Text>
+            {currentStep >= step ? (
+              <LinearGradient
+                colors={['#16a34a', '#15803d']}
+                style={styles.stepGradient}
+              >
+                <Text style={styles.stepNumberActive}>
+                  {step}
+                </Text>
+              </LinearGradient>
+            ) : (
+              <Text style={styles.stepNumber}>
+                {step}
+              </Text>
+            )}
           </View>
           {step < 4 && (
             <View style={[
@@ -651,9 +708,9 @@ export default function SellScreen() {
         <Text style={styles.summaryTitle}>Items</Text>
         {selectedItems.map((item) => (
           <View key={item.id} style={styles.summaryItem}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 12 }}>
               <Image source={item.image} style={styles.summaryItemIconImage} />
-              <Text style={styles.summaryItemName}>
+              <Text style={styles.summaryItemName} numberOfLines={2}>
                 {item.name} ({item.quantity}kg)
               </Text>
             </View>
@@ -698,7 +755,11 @@ export default function SellScreen() {
         {renderStepIndicator()}
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}
+      >
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
         {currentStep === 3 && renderStep3()}
@@ -723,11 +784,25 @@ export default function SellScreen() {
               </View>
             </View>
             
-            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-              <Text style={styles.nextButtonText}>
-                {currentStep === 4 ? 'Schedule Pickup' : 'Next'}
-              </Text>
-              <ArrowRight size={20} color="white" />
+            <TouchableOpacity style={styles.nextButton} onPress={handleNext} activeOpacity={0.8}>
+              <LinearGradient
+                colors={['#16a34a', '#15803d', '#166534']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ 
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+                  gap: 6,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderRadius: 12,
+                }}
+              >
+                <Text style={styles.nextButtonText}>
+                  {currentStep === 4 ? 'Schedule' : 'Next'}
+                </Text>
+                <ArrowRight size={18} color="white" />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -778,9 +853,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
   stepCircleActive: {
-    backgroundColor: '#16a34a',
+    backgroundColor: 'transparent',
+  },
+  stepGradient: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   stepNumber: {
     fontSize: 14,
@@ -802,6 +885,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
   stepContent: {
     padding: 20,
@@ -1210,6 +1297,8 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontFamily: 'Inter-Regular',
     flex: 1,
+    marginLeft: 8,
+    flexWrap: 'wrap',
   },
   summaryItemAmount: {
     fontSize: 14,
@@ -1273,18 +1362,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
   },
   previousButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f3f4f6',
     borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 12,
-    gap: 8,
+    gap: 6,
   },
   previousButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     color: '#6b7280',
     fontFamily: 'Inter-Medium',
@@ -1292,36 +1382,36 @@ const styles = StyleSheet.create({
   totalSection: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
     marginHorizontal: 16,
   },
   totalLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    marginBottom: 4,
+    marginBottom: 2,
+    textAlign: 'center',
   },
   totalAmount: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   totalValue: {
-    fontSize: 20,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#16a34a',
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Inter-Bold',
     marginLeft: 4,
   },
   nextButton: {
-    backgroundColor: '#16a34a',
     borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    overflow: 'hidden',
+    flexShrink: 1,
   },
   nextButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',

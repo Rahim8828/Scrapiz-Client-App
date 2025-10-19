@@ -111,7 +111,7 @@ export default function ForgotPasswordScreen() {
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <ScrapizLogo width={56} />
+          <ScrapizLogo width={240} />
           <Text style={styles.title}>Forgot Password?</Text>
           <Text style={styles.subtitle}>
             No worries! Enter your email address and we'll send you a link to reset your password.

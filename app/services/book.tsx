@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -23,6 +23,8 @@ import {
   Wrench
 } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { services } from '../(tabs)/services';
+import { addOrder } from '../../data/orderData';
 
 type Booking = {
   name: string;
@@ -37,15 +39,25 @@ const { width } = Dimensions.get('window');
 export default function ServiceBookingScreen() {
   const router = useRouter();
   const { service } = useLocalSearchParams<{ service?: string }>();
+  
+  // Get service details from services array
+  const serviceData = services.find(s => s.id === service);
+  const serviceTitle = serviceData?.title || 'Service';
+  
   const [form, setForm] = useState<Booking>({
     name: '',
     phone: '',
     address: '',
     datetime: '',
-    service: (service as string) || '',
+    service: serviceTitle,
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Refs for input navigation
+  const phoneInputRef = useRef<TextInput>(null);
+  const addressInputRef = useRef<TextInput>(null);
+  const datetimeInputRef = useRef<TextInput>(null);
 
   const update = (key: keyof Booking, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -58,21 +70,34 @@ export default function ServiceBookingScreen() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     
-    if (!form.name.trim()) {
+    const trimmedName = form.name.trim();
+    const trimmedPhone = form.phone.trim();
+    const trimmedAddress = form.address.trim();
+    const trimmedDatetime = form.datetime.trim();
+    
+    if (!trimmedName) {
       newErrors.name = 'Name is required';
+    } else if (trimmedName.length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
     }
     
-    if (!form.phone.trim()) {
+    // Improved phone validation - Indian phone format
+    const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
+    const cleanPhone = trimmedPhone.replace(/[\s()-]/g, '');
+    
+    if (!trimmedPhone) {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^\+?[\d\s-()]+$/.test(form.phone)) {
-      newErrors.phone = 'Please enter a valid phone number';
+    } else if (!phoneRegex.test(cleanPhone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
     
-    if (!form.address.trim()) {
+    if (!trimmedAddress) {
       newErrors.address = 'Address is required';
+    } else if (trimmedAddress.length < 10) {
+      newErrors.address = 'Please provide a complete address';
     }
     
-    if (!form.datetime.trim()) {
+    if (!trimmedDatetime) {
       newErrors.datetime = 'Preferred date & time is required';
     }
     
@@ -81,17 +106,51 @@ export default function ServiceBookingScreen() {
   };
 
   const submit = async () => {
+    // Prevent multiple submissions
+    if (isLoading) return;
+    
     if (!validateForm()) return;
     
     setIsLoading(true);
     
     try {
-      // Simulate API call
+      // Trim all fields before submission
+      const trimmedForm = {
+        ...form,
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        datetime: form.datetime.trim(),
+      };
+      
+      // Simulate API call with trimmed data
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Create service order
+      const newOrder = addOrder({
+        type: 'service',
+        status: 'pending',
+        items: [], // Service orders don't have items
+        serviceDetails: {
+          serviceName: serviceTitle,
+          serviceId: service || '',
+          customerName: trimmedForm.name,
+          customerPhone: trimmedForm.phone,
+          customerAddress: trimmedForm.address,
+          notes: trimmedForm.datetime, // Store datetime preference
+        },
+        totalAmount: 0, // Service cost will be determined later
+        scheduledDate: trimmedForm.datetime.split(',')[0] || new Date().toLocaleDateString(),
+        scheduledTime: 'TBD',
+        address: {
+          title: 'Service Location',
+          fullAddress: trimmedForm.address
+        }
+      });
       
       Alert.alert(
         'Booking Confirmed! 🎉',
-        'Your service booking has been submitted successfully. We\'ll contact you within 24 hours to confirm the details.',
+        `Your service booking for "${trimmedForm.service}" has been submitted successfully.\n\nOrder Number: ${newOrder.orderNumber}\n\nYou can track your booking in Profile → Orders section.`,
         [
           { 
             text: 'OK', 
@@ -157,6 +216,9 @@ export default function ServiceBookingScreen() {
                   value={form.name}
                   onChangeText={(text) => update('name', text)}
                   autoCapitalize="words"
+                  returnKeyType="next"
+                  onSubmitEditing={() => phoneInputRef.current?.focus()}
+                  blurOnSubmit={false}
                 />
               </View>
               {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
@@ -168,12 +230,16 @@ export default function ServiceBookingScreen() {
               <View style={[styles.inputWrapper, errors.phone && styles.inputError]}>
                 <Phone size={20} color="#6b7280" style={styles.inputIcon} />
                 <TextInput
+                  ref={phoneInputRef}
                   style={styles.input}
                   placeholder="+91 9876543210"
                   placeholderTextColor="#9ca3af"
                   value={form.phone}
                   onChangeText={(text) => update('phone', text)}
                   keyboardType="phone-pad"
+                  returnKeyType="next"
+                  onSubmitEditing={() => addressInputRef.current?.focus()}
+                  blurOnSubmit={false}
                 />
               </View>
               {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
@@ -185,6 +251,7 @@ export default function ServiceBookingScreen() {
               <View style={[styles.inputWrapper, styles.multilineWrapper, errors.address && styles.inputError]}>
                 <MapPin size={20} color="#6b7280" style={[styles.inputIcon, styles.multilineIcon]} />
                 <TextInput
+                  ref={addressInputRef}
                   style={[styles.input, styles.multilineInput]}
                   placeholder="House no, street, area, city, PIN code"
                   placeholderTextColor="#9ca3af"
@@ -193,6 +260,9 @@ export default function ServiceBookingScreen() {
                   multiline
                   numberOfLines={3}
                   textAlignVertical="top"
+                  returnKeyType="next"
+                  onSubmitEditing={() => datetimeInputRef.current?.focus()}
+                  blurOnSubmit={false}
                 />
               </View>
               {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
@@ -204,11 +274,14 @@ export default function ServiceBookingScreen() {
               <View style={[styles.inputWrapper, errors.datetime && styles.inputError]}>
                 <Calendar size={20} color="#6b7280" style={styles.inputIcon} />
                 <TextInput
+                  ref={datetimeInputRef}
                   style={styles.input}
                   placeholder="e.g., Tomorrow 10:00 AM"
                   placeholderTextColor="#9ca3af"
                   value={form.datetime}
                   onChangeText={(text) => update('datetime', text)}
+                  returnKeyType="done"
+                  onSubmitEditing={submit}
                 />
               </View>
               {errors.datetime && <Text style={styles.errorText}>{errors.datetime}</Text>}

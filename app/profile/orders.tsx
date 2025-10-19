@@ -8,7 +8,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { ArrowLeft, Package, Clock, CheckCircle, X, MapPin, Calendar, IndianRupee } from 'lucide-react-native';
+import { ArrowLeft, Package, Clock, CheckCircle, X, MapPin, Calendar, IndianRupee, User, Phone } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
 
@@ -111,25 +111,62 @@ export default function OrdersScreen() {
                 </View>
               </View>
               
-              <View style={styles.orderItems}>
-                {order.items.slice(0, 3).map((item, index) => (
-                  <View key={index} style={styles.orderItem}>
-                    <Image source={item.image} style={styles.orderItemImage} />
-                    <Text style={styles.orderItemName}>{item.name}</Text>
-                    <Text style={styles.orderItemQuantity}>{item.quantity}kg</Text>
-                    <Text style={styles.orderItemRate}>₹{item.rate}/kg</Text>
+              {/* Display Service Orders differently from Scrap Orders */}
+              {order.type === 'service' && order.serviceDetails ? (
+                <View style={styles.serviceOrderContent}>
+                  <View style={styles.serviceHeader}>
+                    <View style={styles.serviceIconContainer}>
+                      <Package size={24} color="#16a34a" />
+                    </View>
+                    <View style={styles.serviceInfo}>
+                      <Text style={styles.serviceName}>{order.serviceDetails.serviceName}</Text>
+                      <Text style={styles.serviceType}>Service Booking</Text>
+                    </View>
                   </View>
-                ))}
-                {order.items.length > 3 && (
-                  <Text style={styles.moreItemsText}>+{order.items.length - 3} more items</Text>
-                )}
-              </View>
+                  <View style={styles.serviceDetails}>
+                    <View style={styles.serviceDetailRow}>
+                      <User size={14} color="#6b7280" />
+                      <Text style={styles.serviceDetailText}>{order.serviceDetails.customerName}</Text>
+                    </View>
+                    <View style={styles.serviceDetailRow}>
+                      <Phone size={14} color="#6b7280" />
+                      <Text style={styles.serviceDetailText}>{order.serviceDetails.customerPhone}</Text>
+                    </View>
+                    {order.serviceDetails.notes && (
+                      <View style={styles.serviceDetailRow}>
+                        <Clock size={14} color="#6b7280" />
+                        <Text style={styles.serviceDetailText}>{order.serviceDetails.notes}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.orderItems}>
+                  {order.items.slice(0, 3).map((item, index) => (
+                    <View key={index} style={styles.orderItem}>
+                      <Image source={item.image} style={styles.orderItemImage} />
+                      <Text style={styles.orderItemName}>{item.name}</Text>
+                      <Text style={styles.orderItemQuantity}>{item.quantity}kg</Text>
+                      <Text style={styles.orderItemRate}>₹{item.rate}/kg</Text>
+                    </View>
+                  ))}
+                  {order.items.length > 3 && (
+                    <Text style={styles.moreItemsText}>+{order.items.length - 3} more items</Text>
+                  )}
+                </View>
+              )}
               
               <View style={styles.orderFooter}>
-                <View style={styles.orderTotal}>
-                  <IndianRupee size={16} color="#16a34a" />
-                  <Text style={styles.orderTotalAmount}>₹{order.totalAmount}</Text>
-                </View>
+                {order.type === 'service' ? (
+                  <View style={styles.servicePriceNote}>
+                    <Text style={styles.servicePriceText}>Price to be confirmed</Text>
+                  </View>
+                ) : (
+                  <View style={styles.orderTotal}>
+                    <IndianRupee size={16} color="#16a34a" />
+                    <Text style={styles.orderTotalAmount}>₹{order.totalAmount}</Text>
+                  </View>
+                )}
                 <View style={styles.orderAddress}>
                   <MapPin size={12} color="#6b7280" />
                   <Text style={styles.orderAddressText}>{order.address.title}</Text>
@@ -402,5 +439,66 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',
+  },
+  // Service Order Styles
+  serviceOrderContent: {
+    padding: 16,
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  serviceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  serviceIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#dcfce7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  serviceInfo: {
+    flex: 1,
+  },
+  serviceName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 4,
+  },
+  serviceType: {
+    fontSize: 12,
+    color: '#16a34a',
+    fontFamily: 'Inter-Medium',
+  },
+  serviceDetails: {
+    gap: 8,
+  },
+  serviceDetailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  serviceDetailText: {
+    fontSize: 13,
+    color: '#374151',
+    fontFamily: 'Inter-Regular',
+    flex: 1,
+  },
+  servicePriceNote: {
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  servicePriceText: {
+    fontSize: 12,
+    color: '#92400e',
+    fontFamily: 'Inter-Medium',
   },
 });

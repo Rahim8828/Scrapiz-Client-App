@@ -98,7 +98,14 @@ export default function ServiceDetailsScreen() {
   const { service: serviceId } = useLocalSearchParams<{ service?: string }>();
   const router = useRouter();
 
-  const service = services.find(s => s.id === serviceId) || services[0];
+  const service = services.find(s => s.id === serviceId);
+  
+  // If service not found, redirect back
+  if (!service) {
+    router.back();
+    return null;
+  }
+  
   const details = serviceDetails[service.id] || { included: [], howItWorks: [] };
 
 

@@ -1,5 +1,6 @@
 // Order types and data management
 export type OrderStatus = 'pending' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+export type OrderType = 'scrap' | 'service';
 
 export type OrderItem = {
   id: string;
@@ -10,10 +11,20 @@ export type OrderItem = {
   categoryColor: string;
 };
 
+export type ServiceOrderDetails = {
+  serviceName: string;
+  serviceId: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  notes?: string;
+};
+
 export type Order = {
   id: string;
   orderNumber: string;
   status: OrderStatus;
+  type: OrderType;
   items: OrderItem[];
   totalAmount: number;
   scheduledDate: string;
@@ -23,6 +34,7 @@ export type Order = {
     fullAddress: string;
   };
   photos?: string[];
+  serviceDetails?: ServiceOrderDetails;
   createdAt: string;
   updatedAt: string;
 };
@@ -33,6 +45,7 @@ export const mockOrders: Order[] = [
     id: '1',
     orderNumber: 'SCR-2024-001',
     status: 'completed',
+    type: 'scrap',
     items: [
       {
         id: '1',
@@ -65,6 +78,7 @@ export const mockOrders: Order[] = [
     id: '2',
     orderNumber: 'SCR-2024-002',
     status: 'scheduled',
+    type: 'scrap',
     items: [
       {
         id: '3',

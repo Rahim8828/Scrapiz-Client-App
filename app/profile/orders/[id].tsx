@@ -91,34 +91,76 @@ export default function OrderDetailScreen() {
           </View>
         </View>
 
-        {/* Order Items */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Items ({order.items.length})</Text>
-          <View style={styles.itemsCard}>
-            {order.items.map((item, index) => (
-              <View key={index} style={styles.itemRow}>
-                <View style={styles.itemLeft}>
-                  <Image source={item.image} style={styles.itemIconImage} />
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>{item.name}</Text>
-                    <Text style={styles.itemRate}>₹{item.rate}/kg</Text>
+        {/* Order Items or Service Details */}
+        {order.type === 'service' && order.serviceDetails ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Service Details</Text>
+            <View style={styles.itemsCard}>
+              <View style={styles.serviceDetailContainer}>
+                <View style={styles.serviceMainInfo}>
+                  <Package size={32} color="#16a34a" />
+                  <View style={styles.serviceTextInfo}>
+                    <Text style={styles.serviceNameLarge}>{order.serviceDetails.serviceName}</Text>
+                    <Text style={styles.serviceTypeBadge}>Service Booking</Text>
                   </View>
                 </View>
-                <View style={styles.itemRight}>
-                  <Text style={styles.itemQuantity}>{item.quantity}kg</Text>
-                  <Text style={styles.itemTotal}>₹{item.rate * item.quantity}</Text>
+                
+                <View style={styles.serviceDivider} />
+                
+                <View style={styles.customerDetailsSection}>
+                  <Text style={styles.customerSectionTitle}>Customer Information</Text>
+                  <View style={styles.customerDetailRow}>
+                    <Text style={styles.customerLabel}>Name:</Text>
+                    <Text style={styles.customerValue}>{order.serviceDetails.customerName}</Text>
+                  </View>
+                  <View style={styles.customerDetailRow}>
+                    <Text style={styles.customerLabel}>Phone:</Text>
+                    <Text style={styles.customerValue}>{order.serviceDetails.customerPhone}</Text>
+                  </View>
+                  {order.serviceDetails.notes && (
+                    <View style={styles.customerDetailRow}>
+                      <Text style={styles.customerLabel}>Preferred Time:</Text>
+                      <Text style={styles.customerValue}>{order.serviceDetails.notes}</Text>
+                    </View>
+                  )}
                 </View>
-              </View>
-            ))}
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <View style={styles.totalAmount}>
-                <IndianRupee size={18} color="#16a34a" />
-                <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
+                
+                <View style={styles.servicePriceSection}>
+                  <Text style={styles.servicePriceLabel}>Service Cost</Text>
+                  <Text style={styles.servicePriceValue}>To be confirmed</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Items ({order.items.length})</Text>
+            <View style={styles.itemsCard}>
+              {order.items.map((item, index) => (
+                <View key={index} style={styles.itemRow}>
+                  <View style={styles.itemLeft}>
+                    <Image source={item.image} style={styles.itemIconImage} />
+                    <View style={styles.itemInfo}>
+                      <Text style={styles.itemName}>{item.name}</Text>
+                      <Text style={styles.itemRate}>₹{item.rate}/kg</Text>
+                    </View>
+                  </View>
+                  <View style={styles.itemRight}>
+                    <Text style={styles.itemQuantity}>{item.quantity}kg</Text>
+                    <Text style={styles.itemTotal}>₹{item.rate * item.quantity}</Text>
+                  </View>
+                </View>
+              ))}
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>Total Amount</Text>
+                <View style={styles.totalAmount}>
+                  <IndianRupee size={18} color="#16a34a" />
+                  <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
 
         {/* Pickup Details */}
         <View style={styles.section}>
@@ -496,5 +538,86 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
+  },
+  // Service Order Styles
+  serviceDetailContainer: {
+    padding: 20,
+  },
+  serviceMainInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  serviceTextInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  serviceNameLarge: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 6,
+  },
+  serviceTypeBadge: {
+    fontSize: 12,
+    color: '#16a34a',
+    fontFamily: 'Inter-Medium',
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  serviceDivider: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginVertical: 16,
+  },
+  customerDetailsSection: {
+    marginBottom: 16,
+  },
+  customerSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  customerDetailRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+  },
+  customerLabel: {
+    fontSize: 15,
+    color: '#6b7280',
+    fontFamily: 'Inter-Medium',
+    width: 120,
+  },
+  customerValue: {
+    fontSize: 15,
+    color: '#111827',
+    fontFamily: 'Inter-Regular',
+    flex: 1,
+  },
+  servicePriceSection: {
+    backgroundColor: '#fef3c7',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 12,
+  },
+  servicePriceLabel: {
+    fontSize: 13,
+    color: '#92400e',
+    fontFamily: 'Inter-Medium',
+    marginBottom: 4,
+  },
+  servicePriceValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#92400e',
+    fontFamily: 'Inter-SemiBold',
   },
 });
