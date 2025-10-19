@@ -27,6 +27,8 @@ export type Order = {
   type: OrderType;
   items: OrderItem[];
   totalAmount: number;
+  referralBonus?: number; // Added for referral wallet usage
+  finalAmount?: number; // Total amount including referral bonus
   scheduledDate: string;
   scheduledTime: string;
   address: {

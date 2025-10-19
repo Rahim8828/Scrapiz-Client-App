@@ -174,16 +174,16 @@ export default function HomeScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#0ea5e9', '#0284c7']}
+              colors={['#16a34a', '#15803d']}
               style={styles.actionCardGradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
               <View style={[styles.actionIcon, { backgroundColor: 'white' }]}>
-                <AreaChart size={22} color="#0ea5e9" strokeWidth={2.5} />
+                <AreaChart size={22} color="#16a34a" strokeWidth={2.5} />
               </View>
               <Text style={[styles.actionTitle, {color: 'white'}]}>View Rates</Text>
-              <Text style={[styles.actionSubtitle, {color: '#eff6ff'}]}>Today's prices</Text>
+              <Text style={[styles.actionSubtitle, {color: '#dcfce7'}]}>Today's prices</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>

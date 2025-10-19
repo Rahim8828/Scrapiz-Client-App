@@ -22,11 +22,14 @@ export default function RatesScreen() {
   const renderCategorySection = (category: typeof scrapData[0]) => {
     return (
       <View key={category.id} style={styles.categorySection}>
-        <View style={[styles.categoryHeader, { backgroundColor: category.bgColor }]}>
-          <Text style={[styles.categoryTitle, { color: category.color }]}>
+        <LinearGradient
+          colors={['#16a34a', '#15803d']}
+          style={styles.categoryHeader}
+        >
+          <Text style={styles.categoryTitle}>
             {category.title}
           </Text>
-        </View>
+        </LinearGradient>
         
         <View style={styles.itemsGrid}>
           {category.items.map((item, index) => (
@@ -39,7 +42,7 @@ export default function RatesScreen() {
                 )}
               </View>
               <Text style={styles.itemName}>{item.name}</Text>
-              <Text style={[styles.itemRate, { color: category.color }]}>{item.rate}</Text>
+              <Text style={styles.itemRate}>{item.rate}</Text>
               <Text style={styles.itemUnit}>Per kg</Text>
               <Text style={styles.itemDescription}>{item.description}</Text>
             </View>
@@ -244,6 +247,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
+    color: 'white',
   },
   itemsGrid: {
     flexDirection: 'row',
@@ -292,6 +296,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     marginBottom: 2,
+    color: '#16a34a',
   },
   itemUnit: {
     fontSize: 11,

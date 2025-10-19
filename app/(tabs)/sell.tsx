@@ -9,6 +9,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Modal,
 } from 'react-native';
 import {
   Plus,
@@ -72,6 +73,7 @@ export default function SellScreen() {
   const [selectedTime, setSelectedTime] = useState('');
   const [useReferralBalance, setUseReferralBalance] = useState(false);
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | null>(null);
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(true);
   const [addressForm, setAddressForm] = useState({
     title: '',
     addressLine: '',
@@ -441,11 +443,14 @@ export default function SellScreen() {
         {scrapData.map((category) => (
           <View key={category.id} style={styles.categorySection}>
             {/* Category Header */}
-            <View style={[styles.categoryHeaderSell, { backgroundColor: category.bgColor }]}>
-              <Text style={[styles.categoryTitleSell, { color: category.color }]}>
+            <LinearGradient
+              colors={['#16a34a', '#15803d']}
+              style={styles.categoryHeaderSell}
+            >
+              <Text style={styles.categoryTitleSell}>
                 {category.title}
               </Text>
-            </View>
+            </LinearGradient>
             
             {/* Category Items */}
             <View style={styles.categoryItems}>
@@ -459,13 +464,13 @@ export default function SellScreen() {
                     <Image source={item.image} style={styles.itemIconImage} />
                     <View style={styles.itemInfo}>
                       <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={[styles.itemRate, { color: category.color }]}>
+                      <Text style={styles.itemRate}>
                         {item.rate}/kg
                       </Text>
                       <Text style={styles.itemDescription}>{item.description}</Text>
                     </View>
                   </View>
-                  <View style={[styles.addButton, { backgroundColor: category.color }]}>
+                  <View style={styles.addButton}>
                     <Plus size={16} color="white" />
                   </View>
                 </TouchableOpacity>
@@ -484,7 +489,7 @@ export default function SellScreen() {
                 <Image source={item.image} style={styles.selectedItemIconImage} />
                 <View>
                   <Text style={styles.selectedItemName}>{item.name}</Text>
-                  <Text style={[styles.selectedItemRate, { color: item.categoryColor }]}>
+                  <Text style={styles.selectedItemRate}>
                     {item.rate}/kg
                   </Text>
                 </View>
@@ -1015,6 +1020,81 @@ export default function SellScreen() {
           </View>
         </View>
       )}
+
+      {/* Guidelines Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showGuidelinesModal}
+        onRequestClose={() => setShowGuidelinesModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Please keep in mind</Text>
+            </View>
+
+            <ScrollView style={styles.guidelinesScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.guidelinesGrid}>
+                {/* Wood & Glass */}
+                <View style={styles.guidelineCard}>
+                  <View style={styles.guidelineImageContainer}>
+                    <Text style={styles.guidelineEmoji}>🪵🍾</Text>
+                    <View style={styles.crossMark}>
+                      <X size={40} color="#dc2626" strokeWidth={4} />
+                    </View>
+                  </View>
+                  <Text style={styles.guidelineText}>We do not buy Wood & Glass</Text>
+                </View>
+
+                {/* Clothes */}
+                <View style={styles.guidelineCard}>
+                  <View style={styles.guidelineImageContainer}>
+                    <Text style={styles.guidelineEmoji}>👕👖</Text>
+                    <View style={styles.crossMark}>
+                      <X size={40} color="#dc2626" strokeWidth={4} />
+                    </View>
+                  </View>
+                  <Text style={styles.guidelineText}>We do not buy Clothes</Text>
+                </View>
+
+                {/* Scrap Rates */}
+                <View style={styles.guidelineCard}>
+                  <View style={styles.guidelineImageContainer}>
+                    <Text style={styles.guidelineEmoji}>🪑💻</Text>
+                    <View style={styles.crossMark}>
+                      <X size={40} color="#dc2626" strokeWidth={4} />
+                    </View>
+                  </View>
+                  <Text style={styles.guidelineText}>We buy only in scrap rates</Text>
+                </View>
+
+                {/* 15 kg Minimum */}
+                <View style={styles.guidelineCard}>
+                  <View style={styles.guidelineImageContainer}>
+                    <Text style={styles.guidelineEmoji}>⚖️📦</Text>
+                    <Text style={styles.weightBadge}>15 kg</Text>
+                  </View>
+                  <Text style={styles.guidelineText}>Free pickup only above 15 kg</Text>
+                </View>
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={() => setShowGuidelinesModal(false)}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#16a34a', '#15803d']}
+                style={styles.modalButtonGradient}
+              >
+                <Text style={styles.modalButtonText}>Okay, I understand</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1123,6 +1203,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
+    color: 'white',
   },
   categoryItems: {
     gap: 8,
@@ -1164,6 +1245,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontFamily: 'Inter-Medium',
     marginBottom: 2,
+    color: '#16a34a',
   },
   itemDescription: {
     fontSize: 11,
@@ -1174,6 +1256,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
+    backgroundColor: '#16a34a',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1233,7 +1316,7 @@ const styles = StyleSheet.create({
   },
   selectedItemRate: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#16a34a',
     fontFamily: 'Inter-Regular',
   },
   quantityControls: {
@@ -1937,5 +2020,113 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#bbf7d0',
+  },
+  // Guidelines Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalHeader: {
+    padding: 24,
+    paddingBottom: 16,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+  },
+  guidelinesScroll: {
+    maxHeight: 400,
+  },
+  guidelinesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  guidelineCard: {
+    width: '48%',
+    backgroundColor: '#fef9f0',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    minHeight: 160,
+  },
+  guidelineImageContainer: {
+    width: '100%',
+    height: 100,
+    backgroundColor: '#fef3c7',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    position: 'relative',
+  },
+  guidelineEmoji: {
+    fontSize: 48,
+  },
+  crossMark: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -20,
+    marginLeft: -20,
+  },
+  weightBadge: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'white',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+  },
+  guidelineText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  modalButton: {
+    margin: 20,
+    marginTop: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  modalButtonGradient: {
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
+    fontFamily: 'Inter-SemiBold',
   },
 });

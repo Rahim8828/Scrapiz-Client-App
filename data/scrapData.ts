@@ -22,8 +22,8 @@ export const scrapData: ScrapCategory[] = [
     id: 'metal',
     title: 'Types of Metal Scrap',
     icon: '🔩',
-    color: '#f59e0b',
-    bgColor: '#fef3c7',
+    color: '#16a34a',
+    bgColor: '#16a34a',
     items: [
       { name: 'Iron', rate: '₹20-30', image: require('../assets/images/Scrap Rates Photos/Iron.jpg'), description: 'Scrap iron, steel parts', minRate: 30, maxRate: 35 },
       { name: 'Tin', rate: '₹15-25', image: require('../assets/images/Scrap Rates Photos/Tin.jpg'), description: 'Tin cans, containers', minRate: 25, maxRate: 30 },
@@ -37,8 +37,8 @@ export const scrapData: ScrapCategory[] = [
     id: 'electronics',
     title: 'Types of Electronic Scrap',
     icon: '💻',
-    color: '#8b5cf6',
-    bgColor: '#ede9fe',
+    color: '#16a34a',
+    bgColor: '#16a34a',
     items: [
       { name: 'Fridge', rate: '₹100-500', image: require('../assets/images/Scrap Rates Photos/fridge.jpg'), description: 'Single and double door fridges', minRate: 100, maxRate: 500 },
       { name: 'Top Load Washing Machine', rate: '₹100-500', image: require('../assets/images/Scrap Rates Photos/Top Load Machine.jpg'), description: 'Top load washing machines', minRate: 100, maxRate: 500 },
@@ -57,8 +57,8 @@ export const scrapData: ScrapCategory[] = [
     id: 'paper',
     title: 'Types of Paper Scrap',
     icon: '📰',
-    color: '#10b981',
-    bgColor: '#d1fae5',
+    color: '#16a34a',
+    bgColor: '#16a34a',
     items: [
       { name: 'Books', rate: '₹10-12', image: require('../assets/images/Scrap Rates Photos/Book.jpg'), description: 'Old books, notebooks', minRate: 10, maxRate: 12 },
       { name: 'Cardboard Boxes', rate: '₹10-12', image: require('../assets/images/Scrap Rates Photos/Cardboard.jpg'), description: 'Corrugated boxes', minRate: 10, maxRate: 12 },
@@ -70,8 +70,8 @@ export const scrapData: ScrapCategory[] = [
     id: 'plastic',
     title: 'Types of Plastic Scrap',
     icon: '♻️',
-    color: '#3b82f6',
-    bgColor: '#dbeafe',
+    color: '#16a34a',
+    bgColor: '#16a34a',
     items: [
       { name: 'Plastics', rate: '₹40-50', image: require('../assets/images/Scrap Rates Photos/Plastics.jpg'), description: 'Large plastic drums', minRate: 40, maxRate: 50 },
       { name: 'PVC Pipes', rate: '₹10-15', image: require('../assets/images/Scrap Rates Photos/PVC Pipes.jpg'), description: 'PVC pipes, fittings', minRate: 10, maxRate: 15 },

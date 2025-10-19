@@ -124,9 +124,6 @@ export default function ServiceDetailsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <ArrowLeft size={24} color="#111827" />
         </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>{service.title}</Text>
-        </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -204,16 +201,6 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     backgroundColor: '#f3f4f6',
-  },
-  headerContent: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    fontFamily: 'Inter-SemiBold',
-    color: '#111827',
   },
   contentContainer: {
       padding: 16,

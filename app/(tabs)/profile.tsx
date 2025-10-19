@@ -51,7 +51,7 @@ type MenuSection = {
 export default function ProfileScreen() {
   const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const { profile, loadProfile, isLoading } = useProfile();
+  const { profile, loadProfile, updateProfile, isLoading } = useProfile();
 
   // Reload profile when screen comes into focus
   useFocusEffect(
@@ -93,15 +93,18 @@ export default function ProfileScreen() {
 
       if (!result.canceled && result.assets[0]) {
         const imageUri = result.assets[0].uri;
-        // TODO: Upload to server and update profile context
-        // For now, we'll just show a success message
+        
+        // Update profile with new image
+        await updateProfile({
+          ...profile,
+          profileImage: imageUri,
+        });
+        
         Alert.alert(
-          'Profile Photo',
-          'Profile photo will be updated once you save changes in Edit Profile.',
+          'Success!',
+          'Profile photo updated successfully.',
           [{ text: 'OK' }]
         );
-        // You can add logic here to temporarily store the image URI
-        // and navigate to edit-profile screen to save it
       }
     } catch (error) {
       console.error('Error picking image:', error);
