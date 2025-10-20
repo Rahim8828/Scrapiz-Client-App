@@ -25,6 +25,9 @@ import {
   User,
   X,
   Wallet,
+  FileText,
+  Scale,
+  AlertCircle,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -89,6 +92,7 @@ export default function SellScreen() {
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [hasProcessedParams, setHasProcessedParams] = useState(false);
+  const [notes, setNotes] = useState('');
 
   // Handle pre-selected item from search
   useEffect(() => {
@@ -309,6 +313,7 @@ export default function SellScreen() {
     setUseNewAddress(true);
     setErrors({});
     setSelectedImages([]);
+    setNotes('');
     setHasProcessedParams(false); // Reset the flag for new searches
   };
 
@@ -367,6 +372,11 @@ export default function SellScreen() {
         title: getAddressTitle(),
         fullAddress: getDisplayAddress()
       },
+      contact: {
+        name: contactForm.name,
+        mobile: contactForm.mobile
+      },
+      notes: notes.trim() || undefined,
       photos: selectedImages
     });
 
@@ -916,21 +926,48 @@ export default function SellScreen() {
         </View>
       )}
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Pickup Details</Text>
-        <View style={styles.summaryDetail}>
-          <Calendar size={16} color="#6b7280" />
-          <Text style={styles.summaryDetailText}>{selectedDate} • {selectedTime}</Text>
+      {/* Improved Pickup Details Section */}
+      <View style={styles.pickupDetailsCard}>
+        <View style={styles.pickupDetailsHeader}>
+          <View style={styles.pickupDetailsIconWrapper}>
+            <Calendar size={20} color="#16a34a" />
+          </View>
+          <Text style={styles.pickupDetailsTitle}>Pickup Details</Text>
         </View>
-        <View style={styles.summaryDetail}>
-          <MapPin size={16} color="#6b7280" />
-          <View style={styles.summaryAddressContainer}>
-            {getAddressTitle() && (
-              <Text style={styles.summaryAddressTitle}>{getAddressTitle()}</Text>
-            )}
-            <Text style={styles.summaryDetailText}>
-              {getDisplayAddress()}
-            </Text>
+        
+        <View style={styles.pickupDetailsContent}>
+          {/* Date & Time */}
+          <View style={styles.pickupDetailRow}>
+            <View style={styles.pickupDetailLabel}>
+              <Calendar size={16} color="#6b7280" />
+              <Text style={styles.pickupDetailLabelText}>Schedule</Text>
+            </View>
+            <View style={styles.pickupDetailValue}>
+              <Text style={styles.pickupDetailValueText}>{selectedDate}</Text>
+              <View style={styles.pickupTimeBadge}>
+                <Text style={styles.pickupTimeText}>{selectedTime}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.pickupDetailDivider} />
+
+          {/* Address */}
+          <View style={styles.pickupDetailRow}>
+            <View style={styles.pickupDetailLabel}>
+              <MapPin size={16} color="#6b7280" />
+              <Text style={styles.pickupDetailLabelText}>Location</Text>
+            </View>
+            <View style={styles.pickupDetailValue}>
+              {getAddressTitle() && (
+                <View style={styles.addressTitleBadge}>
+                  <Text style={styles.addressTitleText}>{getAddressTitle()}</Text>
+                </View>
+              )}
+              <Text style={styles.pickupAddressText}>
+                {getDisplayAddress()}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -944,6 +981,149 @@ export default function SellScreen() {
         <View style={styles.summaryDetail}>
           <Phone size={16} color="#6b7280" />
           <Text style={styles.summaryDetailText}>{contactForm.mobile}</Text>
+        </View>
+      </View>
+
+      {/* Notes Section */}
+      <View style={styles.summaryCard}>
+        <View style={styles.notesTitleContainer}>
+          <FileText size={18} color="#16a34a" />
+          <Text style={styles.summaryTitle}>Notes (Optional)</Text>
+        </View>
+        <TextInput
+          style={styles.notesInput}
+          placeholder="Add any special instructions or details for pickup..."
+          placeholderTextColor="#9ca3af"
+          multiline
+          numberOfLines={4}
+          value={notes}
+          onChangeText={setNotes}
+          textAlignVertical="top"
+        />
+        <Text style={styles.notesHint}>
+          E.g., Gate code, parking instructions, specific location details, etc.
+        </Text>
+      </View>
+
+      {/* Pickup Charges Section - Enhanced UI */}
+      <View style={styles.pickupChargesCard}>
+        <View style={styles.pickupChargesHeader}>
+          <View style={styles.pickupChargesTitleContainer}>
+            <View style={styles.pickupChargesIconWrapper}>
+              <Scale size={22} color="#16a34a" />
+            </View>
+            <Text style={styles.pickupChargesTitle}>Pickup Charges</Text>
+          </View>
+          <TouchableOpacity style={styles.infoIconContainer}>
+            <AlertCircle size={18} color="#6b7280" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.chargeOptionsContainer}>
+          {/* Free Pickup Card */}
+          <View style={styles.freeChargeCard}>
+            <View style={styles.chargeCardHeader}>
+              <View style={styles.freeTagLarge}>
+                <Text style={styles.freeTagLargeText}>FREE</Text>
+              </View>
+            </View>
+            <View style={styles.chargeConditionsContainer}>
+              <View style={styles.chargeCondition}>
+                <View style={styles.conditionIconCircle}>
+                  <Text style={styles.conditionIcon}>⚖️</Text>
+                </View>
+                <Text style={styles.conditionText}>Weight above{'\n'}<Text style={styles.conditionBold}>20 kg</Text></Text>
+              </View>
+              <View style={styles.orDividerContainer}>
+                <View style={styles.orDividerLine} />
+                <Text style={styles.orDividerText}>OR</Text>
+                <View style={styles.orDividerLine} />
+              </View>
+              <View style={styles.chargeCondition}>
+                <View style={styles.conditionIconCircle}>
+                  <Text style={styles.conditionIcon}>💰</Text>
+                </View>
+                <Text style={styles.conditionText}>Amount above{'\n'}<Text style={styles.conditionBold}>₹200</Text></Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Paid Pickup Card */}
+          <View style={styles.paidChargeCard}>
+            <View style={styles.chargeCardHeader}>
+              <View style={styles.paidTagLarge}>
+                <Text style={styles.paidTagLargeText}>₹30</Text>
+              </View>
+            </View>
+            <View style={styles.chargeConditionsContainer}>
+              <View style={styles.chargeCondition}>
+                <View style={styles.conditionIconCircle}>
+                  <Text style={styles.conditionIcon}>⚖️</Text>
+                </View>
+                <Text style={styles.conditionText}>Weight below{'\n'}<Text style={styles.conditionBold}>20 kg</Text></Text>
+              </View>
+              <View style={styles.andDividerContainer}>
+                <View style={styles.andDividerLine} />
+                <Text style={styles.andDividerText}>AND</Text>
+                <View style={styles.andDividerLine} />
+              </View>
+              <View style={styles.chargeCondition}>
+                <View style={styles.conditionIconCircle}>
+                  <Text style={styles.conditionIcon}>💰</Text>
+                </View>
+                <Text style={styles.conditionText}>Amount below{'\n'}<Text style={styles.conditionBold}>₹200</Text></Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Please Keep in Mind Section */}
+      <View style={styles.keepInMindCard}>
+        <Text style={styles.keepInMindTitle}>Please keep in mind</Text>
+        
+        <View style={styles.keepInMindGrid}>
+          {/* Wood & Glass */}
+          <View style={styles.keepInMindItem}>
+            <View style={styles.keepInMindIconContainer}>
+              <Text style={styles.keepInMindEmoji}>🪵🍾</Text>
+              <View style={styles.keepInMindCross}>
+                <X size={32} color="#dc2626" strokeWidth={3} />
+              </View>
+            </View>
+            <Text style={styles.keepInMindText}>We do not buy{'\n'}Wood & Glass</Text>
+          </View>
+
+          {/* Clothes */}
+          <View style={styles.keepInMindItem}>
+            <View style={styles.keepInMindIconContainer}>
+              <Text style={styles.keepInMindEmoji}>👕👖</Text>
+              <View style={styles.keepInMindCross}>
+                <X size={32} color="#dc2626" strokeWidth={3} />
+              </View>
+            </View>
+            <Text style={styles.keepInMindText}>We do not buy{'\n'}Clothes</Text>
+          </View>
+
+          {/* Furniture & Electronics */}
+          <View style={styles.keepInMindItem}>
+            <View style={styles.keepInMindIconContainer}>
+              <Text style={styles.keepInMindEmoji}>🪑💻</Text>
+              <View style={styles.keepInMindCross}>
+                <X size={32} color="#dc2626" strokeWidth={3} />
+              </View>
+            </View>
+            <Text style={styles.keepInMindText}>We buy only in{'\n'}scrap rates</Text>
+          </View>
+
+          {/* Minimum Weight */}
+          <View style={styles.keepInMindItem}>
+            <View style={styles.keepInMindIconContainer}>
+              <Text style={styles.keepInMindEmoji}>⚖️📦</Text>
+              <Text style={styles.keepInMindWeight}>20 kg</Text>
+            </View>
+            <Text style={styles.keepInMindText}>Free pickup only{'\n'}above 20 kg</Text>
+          </View>
         </View>
       </View>
 
@@ -1069,13 +1249,13 @@ export default function SellScreen() {
                   <Text style={styles.guidelineText}>We buy only in scrap rates</Text>
                 </View>
 
-                {/* 15 kg Minimum */}
+                {/* 20 kg Minimum */}
                 <View style={styles.guidelineCard}>
                   <View style={styles.guidelineImageContainer}>
                     <Text style={styles.guidelineEmoji}>⚖️📦</Text>
-                    <Text style={styles.weightBadge}>15 kg</Text>
+                    <Text style={styles.weightBadge}>20 kg</Text>
                   </View>
-                  <Text style={styles.guidelineText}>Free pickup only above 15 kg</Text>
+                  <Text style={styles.guidelineText}>Free pickup only above 20 kg</Text>
                 </View>
               </View>
             </ScrollView>
@@ -1106,9 +1286,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1120,13 +1300,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   stepTitle: {
     fontSize: 16,
     color: '#6b7280',
     fontFamily: 'Inter-Medium',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   stepIndicator: {
     flexDirection: 'row',
@@ -2128,5 +2308,393 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',
+  },
+  // Improved Pickup Details Styles
+  pickupDetailsCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    overflow: 'hidden',
+  },
+  pickupDetailsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f0fdf4',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dcfce7',
+  },
+  pickupDetailsIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#dcfce7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickupDetailsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+  },
+  pickupDetailsContent: {
+    padding: 20,
+  },
+  pickupDetailRow: {
+    gap: 12,
+  },
+  pickupDetailLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  pickupDetailLabelText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6b7280',
+    fontFamily: 'Inter-SemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  pickupDetailValue: {
+    gap: 8,
+  },
+  pickupDetailValueText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+  },
+  pickupTimeBadge: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#16a34a',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  pickupTimeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#16a34a',
+    fontFamily: 'Inter-SemiBold',
+  },
+  pickupDetailDivider: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginVertical: 16,
+  },
+  addressTitleBadge: {
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
+  addressTitleText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563eb',
+    fontFamily: 'Inter-Bold',
+  },
+  pickupAddressText: {
+    fontSize: 15,
+    color: '#374151',
+    fontFamily: 'Inter-Regular',
+    lineHeight: 22,
+  },
+  // Notes Section Styles
+  notesTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  notesInput: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    padding: 12,
+    fontSize: 14,
+    color: '#111827',
+    fontFamily: 'Inter-Regular',
+    minHeight: 100,
+    maxHeight: 150,
+  },
+  notesHint: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontFamily: 'Inter-Regular',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  // Pickup Charges Section Styles - Enhanced UI
+  pickupChargesCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    overflow: 'hidden',
+  },
+  pickupChargesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#f0fdf4',
+    borderBottomWidth: 1,
+    borderBottomColor: '#dcfce7',
+  },
+  pickupChargesTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  pickupChargesIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#dcfce7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickupChargesTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+  },
+  infoIconContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+  },
+  chargeOptionsContainer: {
+    padding: 16,
+    gap: 12,
+  },
+  freeChargeCard: {
+    backgroundColor: '#f0fdf4',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#16a34a',
+    overflow: 'hidden',
+  },
+  paidChargeCard: {
+    backgroundColor: '#fef9f0',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#f59e0b',
+    overflow: 'hidden',
+  },
+  chargeCardHeader: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  freeTagLarge: {
+    backgroundColor: '#16a34a',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#16a34a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  freeTagLargeText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: 'white',
+    fontFamily: 'Inter-Bold',
+    letterSpacing: 1,
+  },
+  paidTagLarge: {
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#f59e0b',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  paidTagLargeText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: 'white',
+    fontFamily: 'Inter-Bold',
+    letterSpacing: 1,
+  },
+  chargeConditionsContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 12,
+  },
+  chargeCondition: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 10,
+  },
+  conditionIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fef3c7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  conditionIcon: {
+    fontSize: 24,
+  },
+  conditionText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontFamily: 'Inter-Regular',
+    lineHeight: 20,
+    flex: 1,
+  },
+  conditionBold: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+  },
+  orDividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 4,
+  },
+  orDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#16a34a',
+    opacity: 0.3,
+  },
+  orDividerText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#16a34a',
+    fontFamily: 'Inter-Bold',
+    paddingHorizontal: 8,
+  },
+  andDividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 4,
+  },
+  andDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#f59e0b',
+    opacity: 0.3,
+  },
+  andDividerText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#f59e0b',
+    fontFamily: 'Inter-Bold',
+    paddingHorizontal: 8,
+  },
+  // Please Keep in Mind Section Styles
+  keepInMindCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  keepInMindTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+    marginBottom: 16,
+  },
+  keepInMindGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  keepInMindItem: {
+    width: '48%',
+    backgroundColor: '#fef9f0',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+    minHeight: 140,
+    marginBottom: 12,
+  },
+  keepInMindIconContainer: {
+    width: '100%',
+    height: 80,
+    backgroundColor: '#fef3c7',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    position: 'relative',
+  },
+  keepInMindEmoji: {
+    fontSize: 36,
+  },
+  keepInMindCross: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -16,
+    marginLeft: -16,
+  },
+  keepInMindWeight: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
+    fontFamily: 'Inter-Bold',
+  },
+  keepInMindText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#111827',
+    fontFamily: 'Inter-SemiBold',
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });

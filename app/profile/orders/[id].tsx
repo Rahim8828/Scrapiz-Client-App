@@ -213,6 +213,39 @@ export default function OrderDetailScreen() {
           </View>
         </View>
 
+        {/* Contact Information */}
+        {order.contact && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Contact Information</Text>
+            <View style={styles.detailsCard}>
+              <View style={styles.detailRow}>
+                <Phone size={20} color="#6b7280" />
+                <View style={styles.detailInfo}>
+                  <Text style={styles.detailLabel}>Name</Text>
+                  <Text style={styles.detailValue}>{order.contact.name}</Text>
+                </View>
+              </View>
+              <View style={styles.detailRow}>
+                <Phone size={20} color="#6b7280" />
+                <View style={styles.detailInfo}>
+                  <Text style={styles.detailLabel}>Mobile</Text>
+                  <Text style={styles.detailValue}>{order.contact.mobile}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Notes */}
+        {order.notes && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Special Instructions</Text>
+            <View style={styles.notesCard}>
+              <Text style={styles.notesText}>{order.notes}</Text>
+            </View>
+          </View>
+        )}
+
         {/* Order Timeline */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Timeline</Text>
@@ -697,5 +730,18 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
+  },
+  notesCard: {
+    backgroundColor: '#fef9f0',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#fbbf24',
+  },
+  notesText: {
+    fontSize: 14,
+    color: '#374151',
+    fontFamily: 'Inter-Regular',
+    lineHeight: 22,
   },
 });

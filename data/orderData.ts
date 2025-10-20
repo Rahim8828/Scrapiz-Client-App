@@ -35,6 +35,11 @@ export type Order = {
     title: string;
     fullAddress: string;
   };
+  contact?: {
+    name: string;
+    mobile: string;
+  };
+  notes?: string;
   photos?: string[];
   serviceDetails?: ServiceOrderDetails;
   createdAt: string;

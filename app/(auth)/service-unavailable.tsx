@@ -145,15 +145,6 @@ export default function ServiceUnavailableScreen() {
             We're not in {cityName} yet, but we're expanding fast across India! 🚀
           </Text>
 
-          {/* Expected Launch */}
-          {comingSoonInfo && (
-            <View style={styles.launchBadge}>
-              <Text style={styles.launchText}>
-                Expected Launch: {comingSoonInfo.expectedLaunch}
-              </Text>
-            </View>
-          )}
-
           {/* Notify Me Form */}
           <View style={styles.formContainer}>
             <Text style={styles.formTitle}>Get Notified When We Launch</Text>
@@ -285,21 +276,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     maxWidth: 320,
     marginBottom: 20,
-  },
-  launchBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginBottom: 32,
-    borderWidth: 1,
-    borderColor: '#fbbf24',
-  },
-  launchText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#92400e',
-    fontFamily: 'Inter-Bold',
   },
   formContainer: {
     width: '100%',

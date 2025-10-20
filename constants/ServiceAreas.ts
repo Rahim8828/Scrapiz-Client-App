@@ -12,7 +12,6 @@ export interface ServiceCity {
 export interface ComingSoonCity {
   name: string;
   state: string;
-  expectedLaunch: string;
 }
 
 export const SERVICE_CITIES = {
@@ -49,39 +48,29 @@ export const SERVICE_CITIES = {
   comingSoon: [
     {
       name: 'Pune',
-      state: 'Maharashtra',
-      expectedLaunch: 'Q2 2025'
+      state: 'Maharashtra'
     },
     {
       name: 'Thane',
-      state: 'Maharashtra',
-      expectedLaunch: 'Q2 2025'
+      state: 'Maharashtra'
     },
     {
       name: 'Navi Mumbai',
-      state: 'Maharashtra',
-      expectedLaunch: 'Q2 2025'
+      state: 'Maharashtra'
     },
     {
       name: 'Delhi',
-      state: 'Delhi',
-      expectedLaunch: 'Q3 2025'
+      state: 'Delhi'
     },
     {
       name: 'Bangalore',
-      state: 'Karnataka',
-      expectedLaunch: 'Q3 2025'
+      state: 'Karnataka'
     },
     {
       name: 'Hyderabad',
-      state: 'Telangana',
-      expectedLaunch: 'Q4 2025'
+      state: 'Telangana'
     },
-    {
-      name: 'Chennai',
-      state: 'Tamil Nadu',
-      expectedLaunch: 'Q4 2025'
-    }
+
   ] as ComingSoonCity[]
 };
 

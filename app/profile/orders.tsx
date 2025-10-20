@@ -206,9 +206,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: 60,
+    paddingTop: 50,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   headerSubtitle: {
     fontSize: 14,
