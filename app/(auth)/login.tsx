@@ -5,12 +5,12 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Alert,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
   Animated,
+  Image,
 } from 'react-native';
 import {
   Mail,
@@ -18,7 +18,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Chrome,
   Sparkles,
   Shield,
   Zap,
@@ -58,7 +57,7 @@ export default function LoginScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
@@ -247,8 +246,8 @@ export default function LoginScreen() {
                 placeholderTextColor="#9ca3af"
                 value={email}
                 onChangeText={(text) => {
-                  // Auto-lowercase email and trim spaces
-                  setEmail(text.toLowerCase().trim());
+                  // Auto-lowercase email but don't trim during typing
+                  setEmail(text.toLowerCase());
                   if (errors.email) {
                     setErrors(prev => ({ ...prev, email: undefined }));
                   }
@@ -347,11 +346,12 @@ export default function LoginScreen() {
             onPress={handleGoogleLogin}
             disabled={isLoading}
           >
-            <View style={styles.googleIconCircle}>
-              <Chrome size={22} color="#4285f4" />
-            </View>
-                <Text style={styles.googleButtonText}>Continue with Google</Text>
-              </TouchableOpacity>
+            <Image
+              source={require('@/assets/images/Gooogle Favicon.png')}
+              style={styles.googleIcon}
+            />
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+          </TouchableOpacity>
             </Animated.View>
 
             {/* Footer */}
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   greenHeader: {
     position: 'absolute',
     width: '100%',
-    height: height * 0.42,
+    height: height * 0.36,
     top: 0,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -456,7 +456,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: height * 0.42 - 5,
+    paddingTop: height * 0.36 + 20,
     paddingBottom: 30,
     justifyContent: 'space-between',
   },
@@ -678,13 +678,10 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  googleIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#f3f4f6',
-    justifyContent: 'center',
-    alignItems: 'center',
+  googleIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
   googleButtonDisabled: {
     opacity: 0.6,

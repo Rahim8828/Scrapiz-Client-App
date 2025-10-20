@@ -13,6 +13,7 @@ import {
   SafeAreaView,
   Keyboard,
   TouchableWithoutFeedback,
+  Image,
 } from 'react-native';
 import {
   User,
@@ -21,7 +22,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Chrome,
   Phone,
   Gift,
   ArrowLeft,
@@ -403,7 +403,10 @@ export default function RegisterScreen() {
             onPress={handleGoogleSignUp}
             disabled={isLoading}
           >
-            <Chrome size={20} color="#4285f4" />
+            <Image
+              source={require('@/assets/images/Gooogle Favicon.png')}
+              style={styles.googleIcon}
+            />
             <Text style={styles.googleButtonText}>Continue with Google</Text>
           </TouchableOpacity>
 
@@ -597,6 +600,11 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
     marginBottom: 20,
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
   },
   googleButtonDisabled: {
     opacity: 0.6,
