@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   Image,
+  Animated,
 } from 'react-native';
 import {
   User,
@@ -45,6 +46,26 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, slideAnim]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -224,19 +245,37 @@ export default function RegisterScreen() {
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View>
               {/* Header */}
-              <View style={styles.header}>
+              <Animated.View 
+                style={[
+                  styles.header,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }]
+                  }
+                ]}
+              >
                 <ScrapizLogo width={220} />
                 <Text style={styles.welcomeText}>Create Account</Text>
                 <Text style={styles.subtitleText}>
                   Join thousands of users earning money while helping the environment
                 </Text>
-              </View>
+              </Animated.View>
 
         {/* Registration Form */}
-        <View style={styles.formContainer}>
+        <Animated.View 
+          style={[
+            styles.formContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <User size={20} color="#6b7280" style={styles.inputIcon} />
+              <View style={styles.iconCircle}>
+                <User size={20} color="#16a34a" />
+              </View>
               <TextInput
                 style={[styles.input, errors.fullName && styles.inputError]}
                 placeholder="Full Name"
@@ -254,7 +293,9 @@ export default function RegisterScreen() {
 
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Mail size={20} color="#6b7280" style={styles.inputIcon} />
+              <View style={styles.iconCircle}>
+                <Mail size={20} color="#16a34a" />
+              </View>
               <TextInput
                 style={[styles.input, errors.email && styles.inputError]}
                 placeholder="Email Address"
@@ -274,7 +315,9 @@ export default function RegisterScreen() {
 
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Phone size={20} color="#6b7280" style={styles.inputIcon} />
+              <View style={styles.iconCircle}>
+                <Phone size={20} color="#16a34a" />
+              </View>
               <TextInput
                 style={[styles.input, errors.phone && styles.inputError]}
                 placeholder="Phone Number (10 digits)"
@@ -300,7 +343,9 @@ export default function RegisterScreen() {
           {/* Referral Code Input */}
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Gift size={20} color="#22c55e" style={styles.inputIcon} />
+              <View style={styles.iconCircle}>
+                <Gift size={20} color="#16a34a" />
+              </View>
               <TextInput
                 style={[styles.input, errors.referralCode && styles.inputError]}
                 placeholder="Referral Code (Optional)"
@@ -323,7 +368,9 @@ export default function RegisterScreen() {
 
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Lock size={20} color="#6b7280" style={styles.inputIcon} />
+              <View style={styles.iconCircle}>
+                <Lock size={20} color="#16a34a" />
+              </View>
               <TextInput
                 style={[styles.input, errors.password && styles.inputError]}
                 placeholder="Password"
@@ -338,9 +385,9 @@ export default function RegisterScreen() {
                 onPress={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
-                  <EyeOff size={20} color="#6b7280" />
+                  <EyeOff size={22} color="#9ca3af" />
                 ) : (
-                  <Eye size={20} color="#6b7280" />
+                  <Eye size={22} color="#9ca3af" />
                 )}
               </TouchableOpacity>
             </View>
@@ -351,7 +398,9 @@ export default function RegisterScreen() {
 
           <View style={styles.inputContainer}>
             <View style={styles.inputWrapper}>
-              <Lock size={20} color="#6b7280" style={styles.inputIcon} />
+              <View style={styles.iconCircle}>
+                <Lock size={20} color="#16a34a" />
+              </View>
               <TextInput
                 style={[styles.input, errors.confirmPassword && styles.inputError]}
                 placeholder="Confirm Password"
@@ -366,9 +415,9 @@ export default function RegisterScreen() {
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? (
-                  <EyeOff size={20} color="#6b7280" />
+                  <EyeOff size={22} color="#9ca3af" />
                 ) : (
-                  <Eye size={20} color="#6b7280" />
+                  <Eye size={22} color="#9ca3af" />
                 )}
               </TouchableOpacity>
             </View>
@@ -418,17 +467,22 @@ export default function RegisterScreen() {
               <Text style={styles.termsLink}>Privacy Policy</Text>
             </Text>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Footer */}
-        <View style={styles.footer}>
+        <Animated.View 
+          style={[
+            styles.footer,
+            { opacity: fadeAnim }
+          ]}
+        >
           <Text style={styles.footerText}>Already have an account? </Text>
           <Link href="/(auth)/login" asChild>
             <TouchableOpacity>
               <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </Link>
-        </View>
+        </Animated.View>
             </View>
           </TouchableWithoutFeedback>
       </ScrollView>
@@ -501,26 +555,33 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 14,
+    backgroundColor: '#f9fafb',
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
     paddingHorizontal: 16,
-    height: 56,
+    paddingVertical: 4,
+    height: 58,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
   },
-  inputIcon: {
+  iconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#dcfce7',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
   input: {
     flex: 1,
     fontSize: 15,
-    color: '#111827',
-    fontFamily: 'Inter-Regular',
+    color: '#1f2937',
+    fontWeight: '500',
   },
   inputError: {
     borderColor: '#ef4444',
@@ -545,28 +606,28 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     backgroundColor: '#16a34a',
-    borderRadius: 14,
+    borderRadius: 16,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
     shadowColor: '#16a34a',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
     marginTop: 12,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   registerButtonDisabled: {
     opacity: 0.6,
   },
   registerButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
-    fontFamily: 'Inter-SemiBold',
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: 0.3,
   },
   divider: {
     flexDirection: 'row',
@@ -585,8 +646,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   googleButton: {
-    backgroundColor: 'white',
-    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
@@ -594,12 +655,12 @@ const styles = StyleSheet.create({
     gap: 12,
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
-    marginBottom: 20,
   },
   googleIcon: {
     width: 24,
@@ -610,10 +671,9 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   googleButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
-    fontFamily: 'Inter-Medium',
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1f2937',
   },
   termsContainer: {
     paddingHorizontal: 8,

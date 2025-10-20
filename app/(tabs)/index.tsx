@@ -55,13 +55,6 @@ const getHomeRateItems = () => {
 
 const homeRateItems = getHomeRateItems();
 
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning!';
-  if (hour < 17) return 'Good afternoon!';
-  return 'Good evening!';
-};
-
 const tips = [
   'Recycling one aluminum can saves enough energy to run a TV for 3 hours.',
   'The U.S. throws away $11.4 billion worth of recyclable containers and packaging every year.',
@@ -72,8 +65,6 @@ const tips = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const userName = 'Anas Farooqui';
-  const greeting = getGreeting();
   const randomTip = tips[Math.floor(Math.random() * tips.length)];
 
   const handleNavigate = (path: string) => {
@@ -355,8 +346,11 @@ export default function HomeScreen() {
             <View style={styles.brandingDivider} />
             
             <View style={styles.brandingLogoContainer}>
-              <Text style={styles.brandingLogo}>Scrapiz</Text>
-              <Text style={styles.brandingRegistered}>®</Text>
+              <Image 
+                source={require('@/assets/images/Logo without S.png')}
+                style={styles.brandingLogoImage}
+                resizeMode="contain"
+              />
             </View>
           </View>
         </LinearGradient>
@@ -486,17 +480,6 @@ const styles = StyleSheet.create({
   searchBarContainer: {
     marginBottom: 8,
   },
-  greetingContainer: {
-    paddingTop: 4,
-  },
-  greetingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  waveEmoji: {
-    fontSize: 16,
-  },
   // Stats Cards
   statsContainer: {
     flexDirection: 'row',
@@ -556,18 +539,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-  },
-  greeting: {
-    fontSize: 13,
-    color: '#d1fae5',
-    fontFamily: 'Inter-Regular',
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: 'white',
-    fontFamily: 'Inter-SemiBold',
-    marginTop: 2,
   },
   section: {
     paddingHorizontal: 20,
@@ -915,19 +886,19 @@ const styles = StyleSheet.create({
       zIndex: 1,
     },
     brandingBadge: {
-      backgroundColor: 'rgba(16, 185, 129, 0.15)',
+      backgroundColor: 'rgba(22, 163, 74, 0.15)',
       paddingHorizontal: 14,
       paddingVertical: 6,
       borderRadius: 18,
       alignSelf: 'flex-start',
       marginBottom: 18,
       borderWidth: 1,
-      borderColor: 'rgba(16, 185, 129, 0.3)',
+      borderColor: 'rgba(22, 163, 74, 0.3)',
     },
     brandingBadgeText: {
       fontSize: 11,
       fontWeight: '800',
-      color: '#10b981',
+      color: '#16a34a',
       letterSpacing: 1.2,
     },
     brandingTagline: {
@@ -941,27 +912,20 @@ const styles = StyleSheet.create({
     brandingDivider: {
       width: 70,
       height: 3,
-      backgroundColor: '#10b981',
+      backgroundColor: '#16a34a',
       borderRadius: 2,
       marginVertical: 18,
     },
     brandingLogoContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 10,
   },
-  brandingLogo: {
-    fontSize: 44,
-    fontWeight: '700',
-    color: '#10b981',
-    letterSpacing: -1.5,
-  },
-  brandingRegistered: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#10b981',
-    marginLeft: 3,
-    marginTop: -6,
+  brandingLogoImage: {
+    width: 180,
+    height: 50,
+    tintColor: '#16a34a',
+    marginLeft: -16,
   },
   brandingSubtext: {
     fontSize: 15,

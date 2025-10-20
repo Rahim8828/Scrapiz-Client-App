@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -183,7 +183,7 @@ export default function ReferFriendsScreen() {
               <View style={styles.stepContent}>
                 <Text style={styles.stepTitle}>Both Earn Rewards!</Text>
                 <Text style={styles.stepDesc}>
-                  You get ₹10 in wallet • Your friend gets ₹10 discount on their first order
+                  You get ₹10 in wallet • Your friend gets ₹10 on their first Pickup
                 </Text>
               </View>
             </View>
@@ -643,6 +643,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
+    height: 52,
   },
   shareGradient: {
     flexDirection: 'row',
@@ -650,6 +651,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 16,
     gap: 10,
+    height: '100%',
   },
   shareButtonText: {
     fontSize: 15,
@@ -673,6 +675,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 3,
+    height: 52,
   },
   whatsappText: {
     fontSize: 15,
