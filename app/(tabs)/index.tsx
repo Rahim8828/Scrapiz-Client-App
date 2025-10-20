@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Image,
+  Platform,
 } from 'react-native';
 import {
   TrendingUp,
@@ -350,6 +351,7 @@ export default function HomeScreen() {
                 source={require('@/assets/images/Logo without S.png')}
                 style={styles.brandingLogoImage}
                 resizeMode="contain"
+                fadeDuration={0}
               />
             </View>
           </View>
@@ -918,14 +920,21 @@ const styles = StyleSheet.create({
     },
     brandingLogoContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
     marginBottom: 10,
+    backgroundColor: 'transparent',
   },
   brandingLogoImage: {
-    width: 180,
-    height: 50,
-    tintColor: '#16a34a',
+    width: 220,
+    height: 68,
     marginLeft: -16,
+    ...(Platform.OS === 'ios' && {
+      shadowColor: 'transparent',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+    }),
   },
   brandingSubtext: {
     fontSize: 15,
