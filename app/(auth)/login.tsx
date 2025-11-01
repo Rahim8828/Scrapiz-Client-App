@@ -196,7 +196,7 @@ export default function LoginScreen() {
             
             <Text style={styles.welcomeText}>Welcome Back!</Text>
             <Text style={styles.subtitleText}>
-              Sign in to turn your scrap into instant cash 💰
+              Sign in to turn your scrap into instant cash
             </Text>
           </Animated.View>
         </LinearGradient>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   greenHeader: {
     position: 'absolute',
     width: '100%',
-    height: height * 0.36,
+    height: height * 0.40,
     top: 0,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: height * 0.36 + 20,
+    paddingTop: height * 0.40 + 20,
     paddingBottom: 30,
     justifyContent: 'space-between',
   },
@@ -490,6 +490,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     textAlign: 'center',
     letterSpacing: -0.6,
+    textDecorationLine: 'none',
   },
   subtitleText: {
     fontSize: 14,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { Hammer, Wrench, Building, Trash2, ChevronRight, FileText } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,7 +29,11 @@ export default function ServicesScreen() {
         <Text style={styles.headerSubtitle}>Professional services for all your needs</Text>
       </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.servicesList}>
           {services.map((service) => (
             <LinearGradient
@@ -101,6 +105,9 @@ const styles = StyleSheet.create({
   content: { 
     flex: 1, 
     padding: 16 
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   servicesList: { 
     marginBottom: 24 

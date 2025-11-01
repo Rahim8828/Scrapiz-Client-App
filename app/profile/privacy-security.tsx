@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { ArrowLeft, Shield, Lock, Eye, Smartphone, Key, Trash2, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -101,7 +102,11 @@ export default function PrivacySecurityScreen() {
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Security</Text>
           {securityOptions.map((option, index) => (
@@ -213,6 +218,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   section: {
     marginBottom: 32,

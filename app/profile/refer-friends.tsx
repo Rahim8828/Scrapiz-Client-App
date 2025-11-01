@@ -9,6 +9,7 @@ import {
   Alert,
   Clipboard,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Gift, Users, IndianRupee, Share2, Copy, MessageCircle, Wallet, CheckCircle, Info } from 'lucide-react-native';
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
 
   // Wallet Card

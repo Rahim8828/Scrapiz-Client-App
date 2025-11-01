@@ -26,7 +26,7 @@ const serviceGradients = {
   demolition: ['#16a34a', '#15803d'] as const,
   dismantling: ['#16a34a', '#15803d'] as const,
   'paper-shredding': ['#16a34a', '#15803d'] as const,
-  'society-tieup': ['#15803d', '#166534'] as const,
+  'society-tieup': ['#16a34a', '#15803d'] as const,
   'junk-removal': ['#16a34a', '#15803d'] as const,
 } as const;
 import { useRouter } from 'expo-router';

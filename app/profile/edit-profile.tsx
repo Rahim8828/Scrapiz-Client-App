@@ -270,6 +270,7 @@ export default function EditProfileScreen() {
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}
       >
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
@@ -498,7 +499,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   avatarSection: {
     alignItems: 'center',
@@ -564,7 +568,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center', // Changed from 'flex-start' to 'center' for proper alignment
     backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
@@ -578,7 +582,6 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 12,
-    marginTop: 2,
   },
   input: {
     flex: 1,

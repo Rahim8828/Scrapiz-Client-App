@@ -8,6 +8,7 @@ import {
   Dimensions,
   StatusBar,
   Image,
+  Platform,
 } from 'react-native';
 import { TrendingUp, CircleAlert as AlertCircle, ArrowLeft } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -69,7 +70,11 @@ export default function RatesScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Disclaimer */}
         <View style={styles.disclaimerCard}>
           <View style={styles.disclaimerHeader}>
@@ -181,6 +186,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   disclaimerCard: {
     backgroundColor: '#f0fdf4',

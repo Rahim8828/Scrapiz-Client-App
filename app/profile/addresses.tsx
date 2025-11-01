@@ -8,6 +8,7 @@ import {
   Alert,
   Modal,
   TextInput,
+  Platform,
 } from 'react-native';
 import { ArrowLeft, MapPin, Plus, Edit, Trash2, Home, Building, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -162,7 +163,11 @@ export default function AddressesScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <TouchableOpacity style={styles.addAddressCard} onPress={handleAddAddress}>
           <View style={styles.addAddressIcon}>
             <Plus size={24} color="#16a34a" />
@@ -478,6 +483,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   addAddressCard: {
     backgroundColor: 'white',

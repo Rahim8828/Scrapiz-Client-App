@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  Platform,
 } from 'react-native';
 import { ArrowLeft, Package, Clock, CheckCircle, X, MapPin, Calendar, IndianRupee, User, Phone } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -89,7 +90,11 @@ export default function OrdersScreen() {
       </View>
 
       {/* Orders List */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
             <TouchableOpacity
@@ -294,7 +299,10 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     padding: 20,
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   orderCard: {
     backgroundColor: 'white',

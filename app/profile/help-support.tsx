@@ -172,7 +172,11 @@ export default function HelpSupportScreen() {
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Support</Text>
           {contactMethods.map((method, index) => (
@@ -294,6 +298,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   section: {
     marginBottom: 32,

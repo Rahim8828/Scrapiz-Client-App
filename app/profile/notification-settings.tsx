@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  Platform,
 } from 'react-native';
 import { ArrowLeft, Bell, Truck, IndianRupee, MessageCircle, Zap } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -104,7 +105,11 @@ export default function NotificationSettingsScreen() {
         <View style={styles.headerRight} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.masterToggle}>
           <View style={styles.masterToggleContent}>
             <Bell size={24} color="#16a34a" />
@@ -202,6 +207,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: Platform.OS === 'android' ? 100 : 80,
   },
   masterToggle: {
     backgroundColor: 'white',
