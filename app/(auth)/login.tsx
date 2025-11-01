@@ -135,11 +135,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleSkip = () => {
-    // Navigate directly to the main app without authentication
-    router.replace('/(tabs)');
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.backgroundWrapper}>
@@ -181,19 +176,6 @@ export default function LoginScreen() {
             ]}
           />
           
-          {/* Skip Button */}
-          <Animated.View 
-            style={[
-              styles.topBar,
-              { opacity: fadeAnim }
-            ]}
-          >
-            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-              <Text style={styles.skipButtonText}>Skip</Text>
-              <ArrowRight size={16} color="#ffffff" />
-            </TouchableOpacity>
-          </Animated.View>
-
           {/* Header Content in Green Section */}
           <Animated.View 
             style={[
@@ -459,26 +441,6 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.36 + 20,
     paddingBottom: 30,
     justifyContent: 'space-between',
-  },
-  topBar: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 10,
-  },
-  skipButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    gap: 6,
-  },
-  skipButtonText: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '600',
   },
   headerInGreen: {
     position: 'absolute',

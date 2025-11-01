@@ -10,6 +10,8 @@ import {
   Dimensions,
   Image,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import {
   Plus,
@@ -38,7 +40,7 @@ import { useLocation } from '../../contexts/LocationContext';
 
 import { LinearGradient } from 'expo-linear-gradient';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 // Extended type for selected items
 type SelectedScrapItem = ScrapItem & {
@@ -449,7 +451,12 @@ export default function SellScreen() {
       <Text style={styles.stepTitle}>Select Items to Sell</Text>
       <Text style={styles.stepSubtitle}>Choose the scrap materials you want to sell</Text>
       
-      <ScrollView style={styles.categoriesContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.categoriesContainer} 
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
+        contentContainerStyle={{ paddingBottom: 16 }}
+      >
         {scrapData.map((category) => (
           <View key={category.id} style={styles.categorySection}>
             {/* Category Header */}
@@ -1152,6 +1159,8 @@ export default function SellScreen() {
         style={styles.content} 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
       >
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
@@ -1208,13 +1217,21 @@ export default function SellScreen() {
         visible={showGuidelinesModal}
         onRequestClose={() => setShowGuidelinesModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Please keep in mind</Text>
             </View>
 
-            <ScrollView style={styles.guidelinesScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+              style={styles.guidelinesScroll} 
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.guidelinesScrollContent}
+              bounces={false}
+            >
               <View style={styles.guidelinesGrid}>
                 {/* Wood & Glass */}
                 <View style={styles.guidelineCard}>
@@ -1273,7 +1290,7 @@ export default function SellScreen() {
               </LinearGradient>
             </TouchableOpacity>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -1356,7 +1373,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingBottom: 20,
+    paddingBottom: Platform.OS === 'android' ? 100 : 80, // Extra padding for Android
   },
   stepContent: {
     padding: 20,
@@ -1368,7 +1385,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   categoriesContainer: {
-    maxHeight: 500,
+    flexGrow: 0,
+    flexShrink: 1,
+    marginBottom: 16,
   },
   categorySection: {
     marginBottom: 24,
@@ -2214,7 +2233,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     width: '100%',
     maxWidth: 400,
-    maxHeight: '85%',
+    maxHeight: height * 0.80, // Changed from 85% to 80% of screen height for better Android support
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -2233,7 +2252,11 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Bold',
   },
   guidelinesScroll: {
-    maxHeight: 400,
+    flexGrow: 0,
+    flexShrink: 1,
+  },
+  guidelinesScrollContent: {
+    paddingBottom: 16,
   },
   guidelinesGrid: {
     flexDirection: 'row',
