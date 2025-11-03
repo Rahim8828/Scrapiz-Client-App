@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated, Image, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles } from 'lucide-react-native';
-import ScrapizLogo from './ScrapizLogo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -190,7 +189,11 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
                 end={{ x: 1, y: 1 }}
               >
                 <View style={styles.logoInnerBox}>
-                  <ScrapizLogo width={280} />
+                  <Image 
+                    source={require('../assets/images/Scrapiz-logo.png')}
+                    style={styles.logoImage}
+                    resizeMode="contain"
+                  />
                   
                   {/* Decorative Corner Elements */}
                   <View style={[styles.cornerDecor, styles.cornerTopLeft]} />
@@ -516,6 +519,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderWidth: 2,
     borderColor: 'rgba(22, 163, 74, 0.15)',
+  },
+  logoImage: {
+    width: 280,
+    height: 120,
   },
   cornerDecor: {
     position: 'absolute',

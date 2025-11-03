@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { SplashScreen } from 'expo-router';
+import { AuthProvider } from '../contexts/AuthContext';
 import { LocationProvider } from '../contexts/LocationContext';
 import { ProfileProvider } from '../contexts/ProfileContext';
 import { ReferralProvider } from '../contexts/ReferralContext';
@@ -31,18 +32,20 @@ export default function RootLayout() {
   }
 
   return (
-    <ReferralProvider>
-      <ProfileProvider>
-        <LocationProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="services" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-        </LocationProvider>
-      </ProfileProvider>
-    </ReferralProvider>
+    <AuthProvider>
+      <ReferralProvider>
+        <ProfileProvider>
+          <LocationProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="services" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </LocationProvider>
+        </ProfileProvider>
+      </ReferralProvider>
+    </AuthProvider>
   );
 }

@@ -1238,7 +1238,7 @@ export default function SellScreen() {
                   <View style={styles.guidelineImageContainer}>
                     <Text style={styles.guidelineEmoji}>🪵🍾</Text>
                     <View style={styles.crossMark}>
-                      <X size={40} color="#dc2626" strokeWidth={4} />
+                      <X size={36} color="#dc2626" strokeWidth={3.5} />
                     </View>
                   </View>
                   <Text style={styles.guidelineText}>We do not buy Wood & Glass</Text>
@@ -1249,7 +1249,7 @@ export default function SellScreen() {
                   <View style={styles.guidelineImageContainer}>
                     <Text style={styles.guidelineEmoji}>👕👖</Text>
                     <View style={styles.crossMark}>
-                      <X size={40} color="#dc2626" strokeWidth={4} />
+                      <X size={36} color="#dc2626" strokeWidth={3.5} />
                     </View>
                   </View>
                   <Text style={styles.guidelineText}>We do not buy Clothes</Text>
@@ -1260,7 +1260,7 @@ export default function SellScreen() {
                   <View style={styles.guidelineImageContainer}>
                     <Text style={styles.guidelineEmoji}>🪑💻</Text>
                     <View style={styles.crossMark}>
-                      <X size={40} color="#dc2626" strokeWidth={4} />
+                      <X size={36} color="#dc2626" strokeWidth={3.5} />
                     </View>
                   </View>
                   <Text style={styles.guidelineText}>We buy only in scrap rates</Text>
@@ -2230,23 +2230,26 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 24,
+    borderRadius: 20,
     width: '100%',
     maxWidth: 400,
-    maxHeight: height * 0.80, // Changed from 85% to 80% of screen height for better Android support
+    maxHeight: Platform.OS === 'android' ? height * 0.75 : height * 0.80,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
+    overflow: 'hidden',
   },
   modalHeader: {
-    padding: 24,
-    paddingBottom: 16,
+    padding: 20,
+    paddingBottom: 12,
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Inter-Bold',
@@ -2256,72 +2259,72 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   guidelinesScrollContent: {
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   guidelinesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    gap: 12,
+    paddingHorizontal: 16,
+    gap: 10,
   },
   guidelineCard: {
     width: '48%',
     backgroundColor: '#fef9f0',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 14,
     alignItems: 'center',
-    minHeight: 160,
+    minHeight: 150,
   },
   guidelineImageContainer: {
     width: '100%',
-    height: 100,
+    height: 90,
     backgroundColor: '#fef3c7',
-    borderRadius: 12,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
     position: 'relative',
   },
   guidelineEmoji: {
-    fontSize: 48,
+    fontSize: 44,
   },
   crossMark: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -20,
-    marginLeft: -20,
+    marginTop: -18,
+    marginLeft: -18,
   },
   weightBadge: {
     position: 'absolute',
-    bottom: 10,
-    right: 10,
+    bottom: 8,
+    right: 8,
     backgroundColor: 'white',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    fontSize: 15,
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Inter-Bold',
   },
   guidelineText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 17,
   },
   modalButton: {
-    margin: 20,
-    marginTop: 16,
-    borderRadius: 16,
+    margin: 16,
+    marginTop: 12,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   modalButtonGradient: {
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 32,
     alignItems: 'center',
     justifyContent: 'center',

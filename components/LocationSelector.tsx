@@ -14,16 +14,13 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { ChevronDown, MapPin, Navigation, Plus, X, Home, Building } from 'lucide-react-native';
+import { ChevronDown, MapPin, Plus, X, Home, Building } from 'lucide-react-native';
 import { useLocation, SavedLocation } from '../contexts/LocationContext';
 
 export default function LocationSelector() {
   const {
     currentLocation,
     savedLocations,
-    isLoading,
-    error,
-    getCurrentLocation,
     selectLocation,
     saveLocation,
   } = useLocation();
@@ -44,11 +41,6 @@ export default function LocationSelector() {
   const cityInputRef = useRef<TextInput>(null);
   const stateInputRef = useRef<TextInput>(null);
   const pincodeInputRef = useRef<TextInput>(null);
-
-  const handleCurrentLocation = async () => {
-    await getCurrentLocation();
-    setIsModalVisible(false);
-  };
 
   const handleSelectSavedLocation = (location: any) => {
     selectLocation(location);
@@ -157,33 +149,6 @@ export default function LocationSelector() {
 
             {!showManualEntry ? (
               <ScrollView style={styles.modalScroll}>
-                {/* Use Current Location */}
-                <TouchableOpacity
-                  style={styles.locationOption}
-                  onPress={handleCurrentLocation}
-                  disabled={isLoading}
-                >
-                  <View style={styles.optionIconContainer}>
-                    {isLoading ? (
-                      <ActivityIndicator size="small" color="#16a34a" />
-                    ) : (
-                      <Navigation size={20} color="#16a34a" />
-                    )}
-                  </View>
-                  <View style={styles.optionTextContainer}>
-                    <Text style={styles.optionTitle}>Use Current Location</Text>
-                    <Text style={styles.optionSubtitle}>
-                      Auto-detect using GPS
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                {error && (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorText}>{error}</Text>
-                  </View>
-                )}
-
                 {/* Saved Locations */}
                 {savedLocations.length > 0 && (
                   <>

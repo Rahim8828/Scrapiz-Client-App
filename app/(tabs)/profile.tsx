@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfile } from '../../contexts/ProfileContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -52,6 +53,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { profile, loadProfile, updateProfile, isLoading } = useProfile();
+  const { logout } = useAuth();
 
   // Reload profile when screen comes into focus
   useFocusEffect(
@@ -165,8 +167,13 @@ export default function ProfileScreen() {
         { 
           text: 'Logout', 
           style: 'destructive',
-          onPress: () => {
-            router.replace('/(auth)/login');
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace('/(auth)/login');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           }
         }
       ]

@@ -29,11 +29,13 @@ import {
 } from 'lucide-react-native';
 import { Link, useRouter } from 'expo-router';
 import ScrapizLogo from '@/components/ScrapizLogo';
+import { useLocation } from '@/contexts/LocationContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { locationSet, currentLocation } = useLocation();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -209,9 +211,18 @@ export default function RegisterScreen() {
       // Simulate Google OAuth flow
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      Alert.alert('Success', 'Google sign up successful!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
+      // Check if location has been set
+      if (!locationSet || !currentLocation) {
+        // No location set - navigate to location permission screen
+        Alert.alert('Success', 'Google sign up successful!', [
+          { text: 'OK', onPress: () => router.replace('/(auth)/location-permission') }
+        ]);
+      } else {
+        // Location set - navigate to main app
+        Alert.alert('Success', 'Google sign up successful!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        ]);
+      }
     } catch (error) {
       Alert.alert('Error', 'Google sign up failed. Please try again.');
     } finally {

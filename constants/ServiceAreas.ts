@@ -149,3 +149,60 @@ export function getComingSoonCityInfo(cityName: string): ComingSoonCity | null {
     city => city.name.toLowerCase() === cityName.toLowerCase()
   ) || null;
 }
+
+// Check if a pin code is serviceable
+export function isPincodeServiceable(pincode: string): boolean {
+  // Validate format (must start with 1-9 and be exactly 6 digits)
+  if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode.trim())) {
+    return false;
+  }
+  
+  const normalizedPincode = pincode.trim();
+  
+  // Check in all serviceable cities
+  return SERVICE_CITIES.available.some(city => 
+    city.pinCodes?.includes(normalizedPincode)
+  );
+}
+
+// Get city name from pin code
+export function getCityFromPincode(pincode: string): string | null {
+  if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode.trim())) {
+    return null;
+  }
+  
+  const normalizedPincode = pincode.trim();
+  
+  // Find the city that contains this pincode
+  const city = SERVICE_CITIES.available.find(city =>
+    city.pinCodes?.includes(normalizedPincode)
+  );
+  
+  return city ? city.name : null;
+}
+
+// Get all serviceable pin codes
+export function getServiceablePincodes(): string[] {
+  const allPincodes: string[] = [];
+  
+  SERVICE_CITIES.available.forEach(city => {
+    if (city.pinCodes) {
+      allPincodes.push(...city.pinCodes);
+    }
+  });
+  
+  return allPincodes;
+}
+
+// Get city details from pin code
+export function getCityFromPincodeDetails(pincode: string): ServiceCity | null {
+  if (!pincode || !/^[1-9][0-9]{5}$/.test(pincode.trim())) {
+    return null;
+  }
+  
+  const normalizedPincode = pincode.trim();
+  
+  return SERVICE_CITIES.available.find(city =>
+    city.pinCodes?.includes(normalizedPincode)
+  ) || null;
+}

@@ -3,11 +3,13 @@ import { useRouter } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import SplashScreen from '../components/SplashScreen';
 import { useLocation } from '../contexts/LocationContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function IndexScreen() {
   const router = useRouter();
   const [showSplash, setShowSplash] = useState(true);
-  const { currentLocation, serviceAvailable, permissionGranted, checkServiceAvailability } = useLocation();
+  const { currentLocation, serviceAvailable, locationSet, checkServiceAvailability } = useLocation();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const handleSplashFinish = () => {
     setShowSplash(false);
@@ -15,10 +17,16 @@ export default function IndexScreen() {
   };
 
   const handleNavigation = () => {
+    // Wait for auth to load
+    if (authLoading) {
+      return;
+    }
+
     console.log('🚀 Navigation Debug:', {
-      permissionGranted,
+      locationSet,
       hasCurrentLocation: !!currentLocation,
       serviceAvailable,
+      isAuthenticated,
       currentLocation: currentLocation ? {
         city: currentLocation.city,
         latitude: currentLocation.latitude,
@@ -26,18 +34,18 @@ export default function IndexScreen() {
       } : null,
     });
 
-    // First priority: Check if location permission has been granted
-    if (!permissionGranted) {
-      console.log('➡️ Navigating to: location-permission (no permission)');
-      // No permission yet - go to location permission screen
+    // First priority: Check if location has been set
+    if (!locationSet) {
+      console.log('➡️ Navigating to: location-permission (location not set)');
+      // Location not set yet - go to location permission screen
       router.replace('/(auth)/location-permission');
       return;
     }
 
-    // Permission granted, check if we have location data
+    // Location set, check if we have location data
     if (!currentLocation) {
       console.log('➡️ Navigating to: location-permission (no location data)');
-      // Permission granted but no location data - go to permission screen to fetch
+      // Location set but no location data - go to permission screen to fetch
       router.replace('/(auth)/location-permission');
       return;
     }
@@ -48,9 +56,6 @@ export default function IndexScreen() {
     
     if (isServiceable) {
       // Service available - check authentication
-      // TODO: Add actual authentication check
-      const isAuthenticated = false; // Replace with actual auth check
-      
       if (isAuthenticated) {
         console.log('➡️ Navigating to: tabs (authenticated)');
         router.replace('/(tabs)');

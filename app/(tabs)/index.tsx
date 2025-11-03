@@ -348,7 +348,7 @@ export default function HomeScreen() {
             
             <View style={styles.brandingLogoContainer}>
               <Image 
-                source={require('@/assets/images/Logo without S.png')}
+                source={require('@/assets/images/Scrapiz-logo.png')}
                 style={styles.brandingLogoImage}
                 resizeMode="contain"
                 fadeDuration={0}

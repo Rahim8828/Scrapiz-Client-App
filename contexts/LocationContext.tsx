@@ -6,7 +6,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isLocationServiceable, isCityServiceable } from '../constants/ServiceAreas';
+import { 
+  isLocationServiceable, 
+  isCityServiceable, 
+  isPincodeServiceable,
+  getCityFromPincode 
+} from '../constants/ServiceAreas';
 
 export interface LocationData {
   latitude: number;
@@ -28,7 +33,7 @@ interface LocationContextType {
   currentLocation: LocationData | null;
   savedLocations: SavedLocation[];
   serviceAvailable: boolean;
-  permissionGranted: boolean;
+  locationSet: boolean; // Renamed from permissionGranted - indicates if location has been set (via pincode)
   isLoading: boolean;
   error: string | null;
   getCurrentLocation: () => Promise<void>;
@@ -38,6 +43,8 @@ interface LocationContextType {
   selectLocation: (location: LocationData) => void;
   checkServiceAvailability: () => boolean;
   requestLocationPermission: () => Promise<boolean>;
+  validatePincode: (pincode: string) => boolean;
+  setLocationFromPincode: (pincode: string) => Promise<boolean>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
@@ -46,14 +53,14 @@ const STORAGE_KEYS = {
   CURRENT_LOCATION: '@scrapiz_current_location',
   SAVED_LOCATIONS: '@scrapiz_saved_locations',
   SERVICE_AVAILABLE: '@scrapiz_service_available',
-  PERMISSION_GRANTED: '@scrapiz_permission_granted',
+  LOCATION_SET: '@scrapiz_location_set', // Renamed from PERMISSION_GRANTED
 };
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [savedLocations, setSavedLocations] = useState<SavedLocation[]>([]);
   const [serviceAvailable, setServiceAvailable] = useState(false);
-  const [permissionGranted, setPermissionGranted] = useState(false);
+  const [locationSet, setLocationSet] = useState(false); // Renamed from permissionGranted
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,54 +71,50 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   const loadStoredData = async () => {
     try {
-      // Check actual system permission status first
-      const { status } = await Location.getForegroundPermissionsAsync();
-      const hasPermission = status === 'granted';
-      console.log('📍 Location Context - Permission Status:', { status, hasPermission });
-      setPermissionGranted(hasPermission);
+      // Load cached location data
+      const [storedLocation, storedSavedLocations, storedServiceAvailable, storedLocationSet] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEYS.CURRENT_LOCATION),
+        AsyncStorage.getItem(STORAGE_KEYS.SAVED_LOCATIONS),
+        AsyncStorage.getItem(STORAGE_KEYS.SERVICE_AVAILABLE),
+        AsyncStorage.getItem(STORAGE_KEYS.LOCATION_SET),
+      ]);
 
-      // Only load cached data if permission is granted
-      if (hasPermission) {
-        const [storedLocation, storedSavedLocations, storedServiceAvailable] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEYS.CURRENT_LOCATION),
-          AsyncStorage.getItem(STORAGE_KEYS.SAVED_LOCATIONS),
-          AsyncStorage.getItem(STORAGE_KEYS.SERVICE_AVAILABLE),
-        ]);
+      console.log('📦 Loading cached data:', {
+        hasStoredLocation: !!storedLocation,
+        hasStoredServiceAvailable: !!storedServiceAvailable,
+        hasStoredLocationSet: !!storedLocationSet,
+      });
 
-        console.log('📦 Loading cached data:', {
-          hasStoredLocation: !!storedLocation,
-          hasStoredServiceAvailable: !!storedServiceAvailable,
-        });
-
+      if (storedLocationSet === 'true') {
+        setLocationSet(true);
+        
         if (storedLocation) {
           const locationData = JSON.parse(storedLocation);
           console.log('✅ Restored location:', locationData.city);
           setCurrentLocation(locationData);
         }
 
-        if (storedSavedLocations) {
-          setSavedLocations(JSON.parse(storedSavedLocations));
-        }
-
         if (storedServiceAvailable) {
           setServiceAvailable(storedServiceAvailable === 'true');
         }
       } else {
-        console.log('🚫 No permission - clearing cached location');
-        // No permission - clear any cached location data
+        console.log('🚫 Location not set - clearing cached location');
+        // Location not set - clear any cached location data
         await AsyncStorage.multiRemove([
           STORAGE_KEYS.CURRENT_LOCATION,
           STORAGE_KEYS.SERVICE_AVAILABLE,
         ]);
         setCurrentLocation(null);
         setServiceAvailable(false);
+        setLocationSet(false);
       }
 
-      // Always sync permission status to storage
-      await AsyncStorage.setItem(STORAGE_KEYS.PERMISSION_GRANTED, hasPermission.toString());
+      if (storedSavedLocations) {
+        setSavedLocations(JSON.parse(storedSavedLocations));
+      }
     } catch (err) {
       console.error('Failed to load location data:', err);
-      setPermissionGranted(false);
+      setLocationSet(false);
     }
   };
 
@@ -125,14 +128,14 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       
       if (status !== 'granted') {
         setError('Location permission denied');
-        setPermissionGranted(false);
-        await AsyncStorage.setItem(STORAGE_KEYS.PERMISSION_GRANTED, 'false');
+        setLocationSet(false);
+        await AsyncStorage.setItem(STORAGE_KEYS.LOCATION_SET, 'false');
         setIsLoading(false);
         return;
       }
 
-      setPermissionGranted(true);
-      await AsyncStorage.setItem(STORAGE_KEYS.PERMISSION_GRANTED, 'true');
+      setLocationSet(true);
+      await AsyncStorage.setItem(STORAGE_KEYS.LOCATION_SET, 'true');
 
       // Get current position
       const position = await Location.getCurrentPositionAsync({
@@ -190,8 +193,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       const granted = status === 'granted';
-      setPermissionGranted(granted);
-      await AsyncStorage.setItem(STORAGE_KEYS.PERMISSION_GRANTED, granted.toString());
+      setLocationSet(granted);
+      await AsyncStorage.setItem(STORAGE_KEYS.LOCATION_SET, granted.toString());
       return granted;
     } catch (error) {
       console.error('Error requesting location permission:', error);
@@ -201,7 +204,14 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
   const checkServiceAvailability = (): boolean => {
     if (currentLocation) {
-      return isLocationServiceable(currentLocation.latitude, currentLocation.longitude);
+      // If we have a pincode, use pincode validation (new method)
+      if (currentLocation.pincode) {
+        return isPincodeServiceable(currentLocation.pincode);
+      }
+      // Fallback to GPS-based check (legacy support)
+      if (currentLocation.latitude !== 0 && currentLocation.longitude !== 0) {
+        return isLocationServiceable(currentLocation.latitude, currentLocation.longitude);
+      }
     }
     return false;
   };
@@ -240,13 +250,69 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const validatePincode = (pincode: string): boolean => {
+    return isPincodeServiceable(pincode);
+  };
+
+  const setLocationFromPincode = async (pincode: string): Promise<boolean> => {
+    try {
+      // Validate pincode first
+      if (!validatePincode(pincode)) {
+        setError('Invalid or unserviceable pin code');
+        setServiceAvailable(false);
+        return false;
+      }
+
+      // Get city from pincode
+      const city = getCityFromPincode(pincode);
+      
+      if (!city) {
+        setError('Could not determine city from pin code');
+        setServiceAvailable(false);
+        return false;
+      }
+
+      // Create location data from pincode
+      const locationData: LocationData = {
+        latitude: 0, // Not using GPS coordinates
+        longitude: 0,
+        address: 'Address to be provided',
+        city: city,
+        state: 'Maharashtra', // Can be extended based on pincode
+        pincode: pincode,
+        area: city, // Can be enhanced with area mapping
+      };
+
+      // Set location and mark service as available
+      setCurrentLocation(locationData);
+      setServiceAvailable(true);
+      setLocationSet(true); // Pin code entry counts as location being set
+      setError(null);
+
+      // Store in AsyncStorage
+      await Promise.all([
+        AsyncStorage.setItem(STORAGE_KEYS.CURRENT_LOCATION, JSON.stringify(locationData)),
+        AsyncStorage.setItem(STORAGE_KEYS.SERVICE_AVAILABLE, 'true'),
+        AsyncStorage.setItem(STORAGE_KEYS.LOCATION_SET, 'true'),
+      ]);
+
+      console.log('✅ Location set from pincode:', { pincode, city });
+      return true;
+
+    } catch (err) {
+      console.error('Error setting location from pincode:', err);
+      setError('Failed to set location from pin code');
+      return false;
+    }
+  };
+
   return (
     <LocationContext.Provider
       value={{
         currentLocation,
         savedLocations,
         serviceAvailable,
-        permissionGranted,
+        locationSet,
         isLoading,
         error,
         getCurrentLocation,
@@ -256,6 +322,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         selectLocation,
         checkServiceAvailability,
         requestLocationPermission,
+        validatePincode,
+        setLocationFromPincode,
       }}
     >
       {children}
