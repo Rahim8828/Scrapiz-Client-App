@@ -12,6 +12,7 @@ import {
   Keyboard,
   Image,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, User, Mail, Phone, MapPin, Save, Camera, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -249,6 +250,7 @@ export default function EditProfileScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
+      <StatusBar style="dark" />
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={handleDiscard}>
           <ArrowLeft size={24} color="#111827" />
@@ -544,9 +546,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#ef4444',
     justifyContent: 'center',
     alignItems: 'center',

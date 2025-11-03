@@ -24,12 +24,15 @@ import {
 } from 'lucide-react-native';
 import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import ScrapizLogo from '@/components/ScrapizLogo';
+import { useLocation } from '@/contexts/LocationContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { locationSet, currentLocation } = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -102,8 +105,25 @@ export default function LoginScreen() {
       
       // For demo purposes, accept any valid email/password
       if (trimmedEmail && trimmedPassword.length >= 6) {
-        // Navigate to main app
-        router.replace('/(tabs)');
+        // Save user data and auth token
+        const userData = {
+          id: '1',
+          name: 'User',
+          email: trimmedEmail,
+          phone: '1234567890',
+        };
+        const authToken = 'demo-auth-token-' + Date.now();
+        
+        await login(userData, authToken);
+        
+        // Check if location has been set
+        if (!locationSet || !currentLocation) {
+          // No location set - navigate to location permission screen
+          router.replace('/(auth)/location-permission');
+        } else {
+          // Location set - navigate to main app
+          router.replace('/(tabs)');
+        }
       } else {
         Alert.alert('Error', 'Invalid credentials. Please try again.');
       }
@@ -125,9 +145,28 @@ export default function LoginScreen() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // For demo purposes, simulate successful Google login
-      Alert.alert('Success', 'Google login successful!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
+      const userData = {
+        id: 'google-1',
+        name: 'Google User',
+        email: 'user@gmail.com',
+        phone: '1234567890',
+      };
+      const authToken = 'google-auth-token-' + Date.now();
+      
+      await login(userData, authToken);
+      
+      // Check if location has been set
+      if (!locationSet || !currentLocation) {
+        // No location set - navigate to location permission screen
+        Alert.alert('Success', 'Google login successful!', [
+          { text: 'OK', onPress: () => router.replace('/(auth)/location-permission') }
+        ]);
+      } else {
+        // Location set - navigate to main app
+        Alert.alert('Success', 'Google login successful!', [
+          { text: 'OK', onPress: () => router.replace('/(tabs)') }
+        ]);
+      }
     } catch (error) {
       Alert.alert('Error', 'Google login failed. Please try again.');
     } finally {
@@ -187,7 +226,11 @@ export default function LoginScreen() {
             ]}
           >
             <View style={styles.logoContainer}>
-              <ScrapizLogo width={330} />
+              <Image 
+                source={require('@/assets/images/Scrapiz-logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
               <View style={styles.badge}>
                 <Sparkles size={12} color="#ffffff" />
                 <Text style={styles.badgeText}>Trusted by 10,000+ users</Text>
@@ -444,7 +487,7 @@ const styles = StyleSheet.create({
   },
   headerInGreen: {
     position: 'absolute',
-    top: 70,
+    top: 60,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -457,8 +500,13 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
     width: '100%',
+  },
+  logoImage: {
+    width: 300,
+    height: 120,
+    marginBottom: 8,
   },
   logoGlow: {
     display: 'none',
@@ -467,39 +515,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-    borderRadius: 24,
-    gap: 7,
-    marginTop: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.35)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   badgeText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#ffffff',
     fontWeight: '700',
-    letterSpacing: 0.6,
+    letterSpacing: 0.4,
   },
   welcomeText: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '800',
     color: '#ffffff',
-    marginBottom: 5,
-    marginTop: 0,
+    marginBottom: 6,
+    marginTop: 12,
     textAlign: 'center',
     letterSpacing: -0.6,
     textDecorationLine: 'none',
   },
   subtitleText: {
-    fontSize: 14,
-    color: '#ffffff',
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.95)',
     textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 290,
+    lineHeight: 18,
+    maxWidth: 320,
     fontWeight: '500',
-    opacity: 0.95,
   },
   formContainer: {
     marginBottom: 20,

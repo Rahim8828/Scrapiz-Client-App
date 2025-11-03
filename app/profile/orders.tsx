@@ -9,6 +9,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, Package, Clock, CheckCircle, X, MapPin, Calendar, IndianRupee, User, Phone } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
@@ -44,6 +45,7 @@ export default function OrdersScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="dark" />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -261,8 +263,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 12,
     marginRight: 12,
+    minHeight: 44,
   },
   filterTabActive: {
     backgroundColor: '#16a34a',

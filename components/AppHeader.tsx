@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User } from 'lucide-react-native';
 import LocationSelector from './LocationSelector';
@@ -63,7 +63,7 @@ export default function AppHeader({ coinsBalance = 100, showLogo = true }: AppHe
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    paddingTop: 50,
+    paddingTop: Platform.select({ ios: 60, android: 50 }),
     paddingBottom: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,

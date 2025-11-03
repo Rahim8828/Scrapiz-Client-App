@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { Mail, ArrowLeft, ArrowRight, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';

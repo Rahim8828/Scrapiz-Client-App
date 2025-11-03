@@ -11,6 +11,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ArrowLeft, Gift, Users, IndianRupee, Share2, Copy, MessageCircle, Wallet, CheckCircle, Info } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -59,6 +60,7 @@ export default function ReferFriendsScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="light" />
       {/* Header */}
       <LinearGradient
         colors={['#16a34a', '#15803d', '#166534']}
