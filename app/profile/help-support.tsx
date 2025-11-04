@@ -9,7 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { ArrowLeft, MessageCircle, Phone, Mail, CircleHelp as HelpCircle, FileText, ChevronRight, ChevronDown, MessageSquare } from 'lucide-react-native';
+import { ArrowLeft, Phone, Mail, CircleHelp as HelpCircle, ChevronRight, ChevronDown, Shield } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 export default function HelpSupportScreen() {
@@ -40,6 +40,10 @@ export default function HelpSupportScreen() {
             url = `https://wa.me/${cleanNumber}`;
             canOpen = true;
           }
+          break;
+        case 'url':
+          url = value;
+          canOpen = await Linking.canOpenURL(url);
           break;
       }
 
@@ -80,14 +84,6 @@ export default function HelpSupportScreen() {
       action: () => handleContactSupport('email', 'Support@scrapiz.in'),
       color: '#f59e0b',
     },
-    {
-      icon: MessageSquare,
-      title: 'WhatsApp Chat',
-      subtitle: '+91 88287 00630',
-      description: 'Quick responses during business hours',
-      action: () => handleContactSupport('whatsapp', '+918828700630'),
-      color: '#25D366',
-    },
   ];
 
   const faqItems = [
@@ -122,43 +118,6 @@ export default function HelpSupportScreen() {
     {
       question: 'How do I track my order?',
       answer: 'Go to Profile → Orders to see all your pickups. You can track status in real-time: Pending, Scheduled, In Progress, or Completed. You\'ll receive notifications for status updates.',
-    },
-  ];
-
-  const helpResources = [
-    {
-      icon: FileText,
-      title: 'User Guide',
-      subtitle: 'Complete guide to using Scrapiz',
-      action: () => {
-        Alert.alert(
-          'User Guide',
-          'Our comprehensive user guide covers:\n\n• Getting started with Scrapiz\n• How to schedule pickups\n• Understanding rates\n• Payment methods\n• Order tracking\n• Tips for best prices\n\nWould you like us to email you the complete guide?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Email Me', 
-              onPress: () => handleContactSupport('email', 'Support@scrapiz.in')
-            }
-          ]
-        );
-      },
-    },
-    {
-      icon: MessageCircle,
-      title: 'Submit Feedback',
-      subtitle: 'Help us improve our service',
-      action: () => {
-        Alert.alert(
-          'Submit Feedback',
-          'We value your feedback! How would you like to share your thoughts?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Email', onPress: () => handleContactSupport('email', 'Support@scrapiz.in') },
-            { text: 'WhatsApp', onPress: () => handleContactSupport('whatsapp', '+918828700630') }
-          ]
-        );
-      },
     },
   ];
 
@@ -197,21 +156,22 @@ export default function HelpSupportScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Help Resources</Text>
-          {helpResources.map((resource, index) => (
-            <TouchableOpacity key={index} style={styles.resourceCard} onPress={resource.action}>
-              <View style={styles.resourceLeft}>
-                <View style={styles.resourceIcon}>
-                  <resource.icon size={20} color="#6b7280" />
-                </View>
-                <View style={styles.resourceContent}>
-                  <Text style={styles.resourceTitle}>{resource.title}</Text>
-                  <Text style={styles.resourceSubtitle}>{resource.subtitle}</Text>
-                </View>
+          <Text style={styles.sectionTitle}>Privacy & Legal</Text>
+          <TouchableOpacity 
+            style={styles.privacyCard} 
+            onPress={() => handleContactSupport('url', 'https://www.scrapiz.in/privacy-policy')}
+          >
+            <View style={styles.privacyLeft}>
+              <View style={styles.privacyIcon}>
+                <Shield size={24} color="#16a34a" />
               </View>
-              <ChevronRight size={16} color="#d1d5db" />
-            </TouchableOpacity>
-          ))}
+              <View style={styles.privacyContent}>
+                <Text style={styles.privacyTitle}>Privacy Policy</Text>
+                <Text style={styles.privacySubtitle}>Learn how we protect your data</Text>
+              </View>
+            </View>
+            <ChevronRight size={16} color="#d1d5db" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
@@ -366,45 +326,44 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
-  resourceCard: {
+  privacyCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 1,
+    elevation: 2,
   },
-  resourceLeft: {
+  privacyLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  resourceIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#f8fafc',
+  privacyIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
-  resourceContent: {
+  privacyContent: {
     flex: 1,
   },
-  resourceTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+  privacyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#111827',
-    fontFamily: 'Inter-Medium',
-    marginBottom: 2,
+    fontFamily: 'Inter-SemiBold',
+    marginBottom: 4,
   },
-  resourceSubtitle: {
+  privacySubtitle: {
     fontSize: 12,
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
