@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
-  Dimensions,
   Image,
   Keyboard,
 } from 'react-native';
@@ -20,8 +19,8 @@ import { Search, X, ChevronRight } from 'lucide-react-native';
 import { scrapData } from '../data/scrapData';
 import { services } from '../app/(tabs)/services';
 import { useRouter } from 'expo-router';
-
-const { width } = Dimensions.get('window');
+import { wp, hp, fs, spacing } from '../utils/responsive';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface SearchResult {
   id: string;
@@ -36,6 +35,7 @@ interface SearchResult {
 
 export default function SearchBar() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -194,14 +194,15 @@ export default function SearchBar() {
         transparent={true}
         onRequestClose={handleCloseModal}
       >
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
           {/* Search Header */}
-          <View style={styles.searchHeader}>
-            <View style={styles.searchInputContainer}>
-              <Search size={20} color="#6b7280" />
+          <View style={[styles.searchHeader, { borderBottomColor: colors.border, backgroundColor: colors.surface }]}>
+            <View style={[styles.searchInputContainer, { backgroundColor: colors.card }]}>
+              <Search size={20} color={colors.textSecondary} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: colors.text }]}
                 placeholder="Search scrap items & services..."
+                placeholderTextColor={colors.textTertiary}
                 value={searchQuery}
                 onChangeText={handleSearch}
                 autoFocus
@@ -209,7 +210,7 @@ export default function SearchBar() {
               />
               {searchQuery.length > 0 && (
                 <TouchableOpacity onPress={handleClear}>
-                  <X size={20} color="#6b7280" />
+                  <X size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -217,7 +218,7 @@ export default function SearchBar() {
               style={styles.cancelButton}
               onPress={handleCloseModal}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={[styles.cancelText, { color: colors.primary }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
 
@@ -225,14 +226,14 @@ export default function SearchBar() {
             {searchQuery.length === 0 ? (
               /* Popular Searches */
               <View style={styles.popularContainer}>
-                <Text style={styles.sectionTitle}>Popular Searches</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Popular Searches</Text>
                 <View style={styles.popularGrid}>
                   {popularSearches.map((item, index) => (
                     <TouchableOpacity
                       key={index}
                       style={[
                         styles.popularChip,
-                        { borderColor: item.color + '40' },
+                        { backgroundColor: colors.card, borderColor: item.color + '40' },
                       ]}
                       onPress={() => {
                         if (isNavigating) return;
@@ -254,19 +255,19 @@ export default function SearchBar() {
                         style={styles.popularImage}
                         resizeMode="cover"
                       />
-                      <Text style={styles.popularLabel}>{item.label}</Text>
+                      <Text style={[styles.popularLabel, { color: colors.text }]}>{item.label}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
 
                 {/* Services Section */}
-                <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 24 }]}>
                   Our Services
                 </Text>
                 {services.map((service) => (
                   <TouchableOpacity
                     key={service.id}
-                    style={styles.serviceItem}
+                    style={[styles.serviceItem, { backgroundColor: colors.card, borderColor: colors.border }]}
                     onPress={() => {
                       if (isNavigating) return;
                       setIsNavigating(true);
@@ -276,25 +277,25 @@ export default function SearchBar() {
                       setTimeout(() => setIsNavigating(false), 1000);
                     }}
                   >
-                    <View style={styles.serviceIconContainer}>
+                    <View style={[styles.serviceIconContainer, { backgroundColor: colors.primaryLight + '30' }]}>
                       <service.icon size={22} color={service.color} strokeWidth={2.5} />
                     </View>
                     <View style={styles.serviceInfo}>
-                      <Text style={styles.serviceTitle}>{service.title}</Text>
-                      <Text style={styles.serviceDescription}>{service.description}</Text>
+                      <Text style={[styles.serviceTitle, { color: colors.text }]}>{service.title}</Text>
+                      <Text style={[styles.serviceDescription, { color: colors.textSecondary }]}>{service.description}</Text>
                     </View>
-                    <ChevronRight size={18} color="#9ca3af" strokeWidth={2} />
+                    <ChevronRight size={18} color={colors.textTertiary} strokeWidth={2} />
                   </TouchableOpacity>
                 ))}
 
                 {/* Scrap Categories */}
-                <Text style={[styles.sectionTitle, { marginTop: 24 }]}>
+                <Text style={[styles.sectionTitle, { color: colors.textSecondary, marginTop: 24 }]}>
                   Browse Categories
                 </Text>
                 {scrapData.map((category) => (
                   <TouchableOpacity
                     key={category.id}
-                    style={styles.categoryItem}
+                    style={[styles.categoryItem, { backgroundColor: colors.card }]}
                     onPress={() => {
                       if (isNavigating) return;
                       setIsNavigating(true);
@@ -318,26 +319,26 @@ export default function SearchBar() {
                       />
                     )}
                     <View style={styles.categoryInfo}>
-                      <Text style={styles.categoryTitle}>{category.title}</Text>
-                      <Text style={styles.categoryCount}>
+                      <Text style={[styles.categoryTitle, { color: colors.text }]}>{category.title}</Text>
+                      <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>
                         {category.items.length} items
                       </Text>
                     </View>
-                    <ChevronRight size={18} color="#9ca3af" strokeWidth={2} />
+                    <ChevronRight size={18} color={colors.textTertiary} strokeWidth={2} />
                   </TouchableOpacity>
                 ))}
               </View>
             ) : searchResults.length > 0 ? (
               /* Search Results */
               <View style={styles.resultsContent}>
-                <Text style={styles.resultsCount}>
+                <Text style={[styles.resultsCount, { color: colors.textSecondary }]}>
                   {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}{' '}
                   found
                 </Text>
                 {searchResults.map((result) => (
                   <TouchableOpacity
                     key={result.id}
-                    style={styles.resultItem}
+                    style={[styles.resultItem, { backgroundColor: colors.card }]}
                     onPress={() => handleSelectResult(result)}
                   >
                     {result.type === 'scrap' && result.image ? (
@@ -359,8 +360,8 @@ export default function SearchBar() {
                       </View>
                     )}
                     <View style={styles.resultInfo}>
-                      <Text style={styles.resultName}>{result.name}</Text>
-                      <Text style={styles.resultDescription}>
+                      <Text style={[styles.resultName, { color: colors.text }]}>{result.name}</Text>
+                      <Text style={[styles.resultDescription, { color: colors.textSecondary }]}>
                         {result.description}
                       </Text>
                       <Text
@@ -372,7 +373,56 @@ export default function SearchBar() {
                         {result.category}
                       </Text>
                     </View>
-                    <ChevronRight size={18} color="#9ca3af" strokeWidth={2} />
+                    <ChevronRight size={18} color={colors.textTertiary} strokeWidth={2} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : searchResults.length > 0 ? (
+              /* Search Results */
+              <View style={styles.resultsContent}>
+                <Text style={[styles.resultsCount, { color: colors.textSecondary }]}>
+                  {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}{' '}
+                  found
+                </Text>
+                {searchResults.map((result) => (
+                  <TouchableOpacity
+                    key={result.id}
+                    style={[styles.resultItem, { backgroundColor: colors.card }]}
+                    onPress={() => handleSelectResult(result)}
+                  >
+                    {result.type === 'scrap' && result.image ? (
+                      <Image
+                        source={result.image}
+                        style={styles.resultImage}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View
+                        style={[
+                          styles.resultIcon,
+                          { backgroundColor: result.categoryColor + '20' },
+                        ]}
+                      >
+                        <Text style={styles.resultEmoji}>
+                          {result.categoryIcon}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={styles.resultInfo}>
+                      <Text style={[styles.resultName, { color: colors.text }]}>{result.name}</Text>
+                      <Text style={[styles.resultDescription, { color: colors.textSecondary }]}>
+                        {result.description}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.resultCategory,
+                          { color: result.categoryColor },
+                        ]}
+                      >
+                        {result.category}
+                      </Text>
+                    </View>
+                    <ChevronRight size={18} color={colors.textTertiary} strokeWidth={2} />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -380,8 +430,8 @@ export default function SearchBar() {
               /* No Results */
               <View style={styles.noResults}>
                 <Text style={styles.noResultsEmoji}>🔍</Text>
-                <Text style={styles.noResultsText}>No results found</Text>
-                <Text style={styles.noResultsSubtext}>
+                <Text style={[styles.noResultsText, { color: colors.text }]}>No results found</Text>
+                <Text style={[styles.noResultsSubtext, { color: colors.textSecondary }]}>
                   Try searching for paper, plastic, metal, electronics, or services
                 </Text>
               </View>
@@ -399,9 +449,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 10,
+    paddingHorizontal: spacing(14),
+    paddingVertical: spacing(12),
+    gap: spacing(10),
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.3)',
     shadowColor: '#000',
@@ -411,8 +461,8 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   searchIconContainer: {
-    width: 32,
-    height: 32,
+    width: wp(8.5),
+    height: wp(8.5),
     backgroundColor: '#ecfdf5',
     borderRadius: 8,
     justifyContent: 'center',
@@ -421,228 +471,213 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(22, 163, 74, 0.2)',
   },
   placeholderText: {
-    fontSize: 13,
+    fontSize: fs(13),
     color: '#6b7280',
     flex: 1,
     fontWeight: '600',
   },
   searchBadge: {
-    width: 28,
-    height: 28,
+    width: wp(7.5),
+    height: wp(7.5),
     backgroundColor: '#fef3c7',
-    borderRadius: 14,
+    borderRadius: wp(3.75),
     justifyContent: 'center',
     alignItems: 'center',
   },
   searchBadgeText: {
-    fontSize: 14,
+    fontSize: fs(14),
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'white',
   },
   searchHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 50,
-    paddingBottom: 12,
+    paddingHorizontal: spacing(16),
+    paddingTop: spacing(50),
+    paddingBottom: spacing(12),
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-    gap: 12,
+    gap: spacing(12),
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
     borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
+    paddingHorizontal: spacing(12),
+    paddingVertical: spacing(10),
+    gap: spacing(8),
   },
   searchInput: {
     flex: 1,
-    fontSize: 15,
-    color: '#111827',
+    fontSize: fs(15),
   },
   cancelButton: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing(8),
   },
   cancelText: {
-    fontSize: 15,
-    color: '#16a34a',
-    fontWeight: '500',
+    fontSize: fs(15),
+    fontWeight: '600',
   },
   resultsContainer: {
     flex: 1,
   },
   popularContainer: {
-    padding: 20,
+    padding: spacing(20),
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '600',
-    color: '#6b7280',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 16,
+    marginBottom: spacing(16),
   },
   popularGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between',
+    gap: spacing(12),
   },
   popularChip: {
-    flexDirection: 'row',
+    width: '48%', // Ensures 2x2 grid on all devices
+    flexDirection: 'column',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: 'white',
-    borderRadius: 20,
+    paddingHorizontal: spacing(14),
+    paddingVertical: spacing(16),
+    borderRadius: 16,
     borderWidth: 1.5,
-    gap: 8,
+    gap: spacing(10),
+    minHeight: hp(15), // Ensures consistent height
   },
   popularImage: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: wp(20),
+    height: wp(20),
+    borderRadius: 12,
+    backgroundColor: '#f3f4f6',
   },
   popularIcon: {
-    fontSize: 18,
+    fontSize: fs(18),
   },
   popularLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: fs(14),
+    fontWeight: '600',
+    textAlign: 'center',
   },
   categoryItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#f9fafb',
+    padding: spacing(16),
     borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
+    marginBottom: spacing(12),
+    gap: spacing(12),
   },
   categoryImage: {
-    width: 56,
-    height: 56,
+    width: wp(15),
+    height: wp(15),
     borderRadius: 12,
     backgroundColor: '#f3f4f6',
   },
   categoryIcon: {
-    width: 48,
-    height: 48,
+    width: wp(12),
+    height: wp(12),
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   categoryEmoji: {
-    fontSize: 24,
+    fontSize: fs(24),
   },
   categoryInfo: {
     flex: 1,
   },
   categoryTitle: {
-    fontSize: 15,
+    fontSize: fs(15),
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    marginBottom: spacing(4),
   },
   categoryCount: {
-    fontSize: 13,
-    color: '#6b7280',
+    fontSize: fs(13),
   },
   resultsContent: {
-    padding: 20,
+    padding: spacing(20),
   },
   resultsCount: {
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '500',
-    color: '#6b7280',
-    marginBottom: 16,
+    marginBottom: spacing(16),
   },
   resultItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    padding: 16,
-    backgroundColor: '#f9fafb',
+    padding: spacing(16),
     borderRadius: 12,
-    marginBottom: 12,
-    gap: 12,
+    marginBottom: spacing(12),
+    gap: spacing(12),
   },
   resultIcon: {
-    width: 48,
-    height: 48,
+    width: wp(12),
+    height: wp(12),
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   resultEmoji: {
-    fontSize: 24,
+    fontSize: fs(24),
   },
   resultInfo: {
     flex: 1,
   },
   resultName: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    marginBottom: spacing(4),
   },
   resultDescription: {
-    fontSize: 13,
-    color: '#6b7280',
-    marginBottom: 6,
+    fontSize: fs(13),
+    marginBottom: spacing(6),
   },
   resultCategory: {
-    fontSize: 12,
+    fontSize: fs(12),
     fontWeight: '600',
   },
   noResults: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 80,
+    paddingVertical: hp(10),
   },
   noResultsEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
+    fontSize: fs(64),
+    marginBottom: spacing(16),
   },
   noResultsText: {
-    fontSize: 18,
+    fontSize: fs(18),
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    marginBottom: spacing(8),
   },
   noResultsSubtext: {
-    fontSize: 14,
-    color: '#9ca3af',
+    fontSize: fs(14),
     textAlign: 'center',
-    paddingHorizontal: 40,
+    paddingHorizontal: spacing(40),
   },
   serviceItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#ffffff',
+    padding: spacing(16),
     borderRadius: 12,
-    marginBottom: 10,
-    gap: 12,
+    marginBottom: spacing(10),
+    gap: spacing(12),
     borderWidth: 1,
-    borderColor: '#f3f4f6',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 2,
   },
   serviceIconContainer: {
-    width: 44,
-    height: 44,
+    width: wp(11),
+    height: wp(11),
     borderRadius: 12,
-    backgroundColor: '#f0fdf4',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -652,18 +687,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceTitle: {
-    fontSize: 15,
+    fontSize: fs(15),
     fontWeight: '600',
-    color: '#111827',
-    marginBottom: 3,
+    marginBottom: spacing(3),
   },
   serviceDescription: {
-    fontSize: 13,
-    color: '#6b7280',
+    fontSize: fs(13),
+    lineHeight: fs(18),
   },
   resultImage: {
-    width: 56,
-    height: 56,
+    width: wp(15),
+    height: wp(15),
     borderRadius: 12,
     backgroundColor: '#f3f4f6',
   },

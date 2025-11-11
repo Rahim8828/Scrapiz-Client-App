@@ -9,14 +9,16 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { Mail, ArrowLeft, ArrowRight, CircleCheck as CheckCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import ScrapizLogo from '@/components/ScrapizLogo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
@@ -98,23 +100,24 @@ export default function ForgotPasswordScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container} 
+      style={[styles.container, { backgroundColor: colors.background }]} 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
-        <TouchableOpacity style={styles.backIcon} onPress={handleBackToLogin}>
-          <ArrowLeft size={24} color="#6b7280" />
+        <TouchableOpacity style={[styles.backIcon, { backgroundColor: colors.card }]} onPress={handleBackToLogin}>
+          <ArrowLeft size={24} color={colors.textSecondary} />
         </TouchableOpacity>
 
         <View style={styles.header}>
-          <ScrapizLogo width={240} />
-          <Text style={styles.title}>Forgot Password?</Text>
-          <Text style={styles.subtitle}>
+          <ScrapizLogo width={300} />
+          <Text style={[styles.title, { color: colors.text }]}>Forgot Password?</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             No worries! Enter your email address and we'll send you a link to reset your password.
           </Text>
         </View>
@@ -122,12 +125,12 @@ export default function ForgotPasswordScreen() {
         {/* Form */}
         <View style={styles.formContainer}>
           <View style={styles.inputContainer}>
-            <View style={styles.inputWrapper}>
-              <Mail size={20} color="#6b7280" style={styles.inputIcon} />
+            <View style={[styles.inputWrapper, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Mail size={20} color={colors.textSecondary} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, error && styles.inputError]}
+                style={[styles.input, { color: colors.text }, error && styles.inputError]}
                 placeholder="Enter your email address"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textTertiary}
                 value={email}
                 onChangeText={(text) => {
                   setEmail(text);

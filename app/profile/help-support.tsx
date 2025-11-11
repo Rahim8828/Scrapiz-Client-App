@@ -8,12 +8,16 @@ import {
   Linking,
   Alert,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { ArrowLeft, Phone, Mail, CircleHelp as HelpCircle, ChevronRight, ChevronDown, Shield } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../contexts/ThemeContext';
+import { wp, hp, fs, spacing, MIN_TOUCH_SIZE } from '../../utils/responsive';
 
 export default function HelpSupportScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
 
   const handleContactSupport = async (method: string, value: string) => {
@@ -122,12 +126,13 @@ export default function HelpSupportScreen() {
   ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#111827" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }]} onPress={() => router.back()}>
+          <ArrowLeft size={fs(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Help & Support</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Help & Support</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -137,65 +142,65 @@ export default function HelpSupportScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact Support</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Contact Support</Text>
           {contactMethods.map((method, index) => (
-            <TouchableOpacity key={index} style={styles.contactCard} onPress={method.action}>
+            <TouchableOpacity key={index} style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={method.action}>
               <View style={styles.contactLeft}>
                 <View style={[styles.contactIcon, { backgroundColor: `${method.color}20` }]}>
-                  <method.icon size={24} color={method.color} />
+                  <method.icon size={fs(24)} color={method.color} />
                 </View>
                 <View style={styles.contactContent}>
-                  <Text style={styles.contactTitle}>{method.title}</Text>
-                  <Text style={styles.contactSubtitle}>{method.subtitle}</Text>
-                  <Text style={styles.contactDescription}>{method.description}</Text>
+                  <Text style={[styles.contactTitle, { color: colors.text }]}>{method.title}</Text>
+                  <Text style={[styles.contactSubtitle, { color: colors.textSecondary }]}>{method.subtitle}</Text>
+                  <Text style={[styles.contactDescription, { color: colors.textSecondary }]}>{method.description}</Text>
                 </View>
               </View>
-              <ChevronRight size={16} color="#d1d5db" />
+              <ChevronRight size={fs(16)} color="#d1d5db" />
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Privacy & Legal</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Privacy & Legal</Text>
           <TouchableOpacity 
-            style={styles.privacyCard} 
+            style={[styles.privacyCard, { backgroundColor: colors.card, borderColor: colors.border }]} 
             onPress={() => handleContactSupport('url', 'https://www.scrapiz.in/privacy-policy')}
           >
             <View style={styles.privacyLeft}>
-              <View style={styles.privacyIcon}>
-                <Shield size={24} color="#16a34a" />
+              <View style={[styles.privacyIcon, { backgroundColor: colors.primaryLight + '40' }]}>
+                <Shield size={fs(24)} color={colors.primary} />
               </View>
               <View style={styles.privacyContent}>
-                <Text style={styles.privacyTitle}>Privacy Policy</Text>
-                <Text style={styles.privacySubtitle}>Learn how we protect your data</Text>
+                <Text style={[styles.privacyTitle, { color: colors.text }]}>Privacy Policy</Text>
+                <Text style={[styles.privacySubtitle, { color: colors.textSecondary }]}>Learn how we protect your data</Text>
               </View>
             </View>
-            <ChevronRight size={16} color="#d1d5db" />
+            <ChevronRight size={fs(16)} color={colors.border} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
-          <Text style={styles.sectionSubtitle}>Tap on any question to view the answer</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Frequently Asked Questions</Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>Tap on any question to view the answer</Text>
           {faqItems.map((faq, index) => (
             <TouchableOpacity 
               key={index} 
-              style={styles.faqCard}
+              style={[styles.faqCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() => toggleFAQ(index)}
               activeOpacity={0.7}
             >
               <View style={styles.faqHeader}>
-                <Text style={styles.faqQuestion}>{faq.question}</Text>
-                <View style={styles.faqIconContainer}>
+                <Text style={[styles.faqQuestion, { color: colors.text }]}>{faq.question}</Text>
+                <View style={[styles.faqIconContainer, { backgroundColor: colors.surface }]}>
                   {expandedFAQ === index ? (
-                    <ChevronDown size={20} color="#16a34a" />
+                    <ChevronDown size={fs(20)} color={colors.primary} />
                   ) : (
-                    <ChevronRight size={20} color="#9ca3af" />
+                    <ChevronRight size={fs(20)} color={colors.textSecondary} />
                   )}
                 </View>
               </View>
               {expandedFAQ === index && (
-                <Text style={styles.faqAnswer}>{faq.answer}</Text>
+                <Text style={[styles.faqAnswer, { color: colors.textSecondary, borderTopColor: colors.border }]}>{faq.answer}</Text>
               )}
             </TouchableOpacity>
           ))}
@@ -210,7 +215,7 @@ export default function HelpSupportScreen() {
             style={styles.emergencyButton}
             onPress={() => handleContactSupport('phone', '+918828700630')}
           >
-            <Phone size={20} color="white" />
+            <Phone size={fs(20)} color="white" />
             <Text style={styles.emergencyButtonText}>Call Support Now</Text>
           </TouchableOpacity>
         </View>
@@ -226,9 +231,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingTop: Platform.select({ ios: hp(7.4), android: hp(6.2) }),
+    paddingHorizontal: spacing(20),
+    paddingBottom: spacing(20),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -239,53 +244,54 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: wp(10.6),
+    height: wp(10.6),
+    borderRadius: wp(5.3),
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: fs(20),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
   },
   headerRight: {
-    width: 40,
+    width: wp(10.6),
   },
   content: {
     flex: 1,
-    padding: 20,
+    padding: spacing(20),
   },
   scrollContent: {
-    paddingBottom: Platform.OS === 'android' ? 100 : 80,
+    paddingBottom: Platform.OS === 'android' ? hp(12.3) : hp(9.8),
   },
   section: {
-    marginBottom: 32,
+    marginBottom: spacing(32),
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 8,
+    marginBottom: spacing(8),
   },
   sectionSubtitle: {
-    fontSize: 13,
+    fontSize: fs(13),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    marginBottom: 16,
+    marginBottom: spacing(16),
   },
   contactCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: spacing(16),
+    padding: spacing(20),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing(12),
+    minHeight: MIN_TOUCH_SIZE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -298,41 +304,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: wp(14.9),
+    height: wp(14.9),
+    borderRadius: wp(7.45),
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: spacing(16),
   },
   contactContent: {
     flex: 1,
   },
   contactTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 4,
+    marginBottom: spacing(4),
   },
   contactSubtitle: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#16a34a',
     fontFamily: 'Inter-Medium',
-    marginBottom: 2,
+    marginBottom: spacing(2),
   },
   contactDescription: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
   privacyCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: spacing(16),
+    padding: spacing(20),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: MIN_TOUCH_SIZE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -345,34 +352,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   privacyIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: wp(14.9),
+    height: wp(14.9),
+    borderRadius: wp(7.45),
     backgroundColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: spacing(16),
   },
   privacyContent: {
     flex: 1,
   },
   privacyTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 4,
+    marginBottom: spacing(4),
   },
   privacySubtitle: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
   faqCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: spacing(12),
+    padding: spacing(16),
+    marginBottom: spacing(12),
+    minHeight: MIN_TOUCH_SIZE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -385,65 +393,66 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   faqQuestion: {
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing(12),
   },
   faqIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: wp(7.4),
+    height: wp(7.4),
+    borderRadius: wp(3.7),
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   faqAnswer: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    lineHeight: 20,
-    marginTop: 12,
-    paddingTop: 12,
+    lineHeight: fs(20),
+    marginTop: spacing(12),
+    paddingTop: spacing(12),
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
   },
   emergencyCard: {
     backgroundColor: '#dc2626',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: spacing(16),
+    padding: spacing(24),
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing(20),
   },
   emergencyTitle: {
-    fontSize: 18,
+    fontSize: fs(18),
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 8,
+    marginBottom: spacing(8),
     textAlign: 'center',
   },
   emergencyText: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#fecaca',
     fontFamily: 'Inter-Regular',
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 20,
+    marginBottom: spacing(20),
+    lineHeight: fs(20),
   },
   emergencyButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    borderRadius: spacing(12),
+    paddingVertical: spacing(12),
+    paddingHorizontal: spacing(20),
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing(8),
+    minHeight: MIN_TOUCH_SIZE,
   },
   emergencyButtonText: {
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',

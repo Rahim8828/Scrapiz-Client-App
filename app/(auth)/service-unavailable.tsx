@@ -11,15 +11,18 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MapPin, Bell, Rocket } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocation } from '../../contexts/LocationContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { SERVICE_CITIES, getComingSoonCityInfo } from '../../constants/ServiceAreas';
 
 export default function ServiceUnavailableScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const { currentLocation } = useLocation();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -110,9 +113,10 @@ export default function ServiceUnavailableScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -134,28 +138,28 @@ export default function ServiceUnavailableScreen() {
               { transform: [{ translateY: bounceAnim }] }
             ]}
           >
-            <View style={styles.rocketContainer}>
-              <Rocket size={80} color="#16a34a" strokeWidth={1.5} />
+            <View style={[styles.rocketContainer, { backgroundColor: colors.primaryLight + '20' }]}>
+              <Rocket size={80} color={colors.primary} strokeWidth={1.5} />
             </View>
           </Animated.View>
 
           {/* Title */}
-          <Text style={styles.title}>Coming Soon to {cityName}!</Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.title, { color: colors.text }]}>Coming Soon to {cityName}!</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
             We're not in {cityName} yet, but we're expanding fast across India! 🚀
           </Text>
 
           {/* Notify Me Form */}
-          <View style={styles.formContainer}>
-            <Text style={styles.formTitle}>Get Notified When We Launch</Text>
+          <View style={[styles.formContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.formTitle, { color: colors.text }]}>Get Notified When We Launch</Text>
 
             <View style={styles.inputGroup}>
-              <View style={styles.inputWrapper}>
+              <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Text style={styles.inputIcon}>📧</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: colors.text }]}
                   placeholder="Email Address"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textTertiary}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
@@ -164,12 +168,12 @@ export default function ServiceUnavailableScreen() {
                 />
               </View>
 
-              <View style={styles.inputWrapper}>
+              <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Text style={styles.inputIcon}>📱</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { color: colors.text }]}
                   placeholder="Phone Number (Optional)"
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor={colors.textTertiary}
                   value={phone}
                   onChangeText={(text) => {
                     const cleaned = text.replace(/\D/g, '');
@@ -209,19 +213,19 @@ export default function ServiceUnavailableScreen() {
 
           {/* Coming Soon Cities */}
           <View style={styles.citiesContainer}>
-            <Text style={styles.citiesTitle}>Expanding to:</Text>
+            <Text style={[styles.citiesTitle, { color: colors.text }]}>Expanding to:</Text>
             <View style={styles.citiesGrid}>
               {SERVICE_CITIES.comingSoon.slice(0, 6).map((city, index) => (
-                <View key={index} style={styles.cityChip}>
-                  <MapPin size={14} color="#16a34a" />
-                  <Text style={styles.cityName}>{city.name}</Text>
+                <View key={index} style={[styles.cityChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <MapPin size={14} color={colors.primary} />
+                  <Text style={[styles.cityName, { color: colors.textSecondary }]}>{city.name}</Text>
                 </View>
               ))}
             </View>
           </View>
 
           {/* Footer Note */}
-          <Text style={styles.footerNote}>
+          <Text style={[styles.footerNote, { color: colors.textTertiary }]}>
             🌱 As a bootstrapped startup, we're building Scrapiz sustainably. Every city we expand to is carefully planned for quality service!
           </Text>
         </Animated.View>

@@ -8,12 +8,15 @@ import {
   Switch,
   Alert,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { ArrowLeft, Shield, Lock, Eye, Smartphone, Key, Trash2, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function PrivacySecurityScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [settings, setSettings] = useState({
     biometricAuth: true,
     dataSharing: false,
@@ -93,12 +96,14 @@ export default function PrivacySecurityScreen() {
   ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#111827" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }]} onPress={() => router.back()}>
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Privacy & Security</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Privacy & Security</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -108,69 +113,69 @@ export default function PrivacySecurityScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Security</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Security</Text>
           {securityOptions.map((option, index) => (
-            <TouchableOpacity key={index} style={styles.optionItem} onPress={option.action}>
+            <TouchableOpacity key={index} style={[styles.optionItem, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={option.action}>
               <View style={styles.optionLeft}>
                 <View style={[styles.optionIcon, { backgroundColor: `${option.color}20` }]}>
                   <option.icon size={20} color={option.color} />
                 </View>
                 <View style={styles.optionContent}>
-                  <Text style={styles.optionTitle}>{option.title}</Text>
-                  <Text style={styles.optionSubtitle}>{option.subtitle}</Text>
+                  <Text style={[styles.optionTitle, { color: colors.text }]}>{option.title}</Text>
+                  <Text style={[styles.optionSubtitle, { color: colors.textSecondary }]}>{option.subtitle}</Text>
                 </View>
               </View>
-              <ChevronRight size={16} color="#d1d5db" />
+              <ChevronRight size={16} color={colors.border} />
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Privacy Settings</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Privacy Settings</Text>
           {privacySettings.map((setting) => (
-            <View key={setting.key} style={styles.settingItem}>
+            <View key={setting.key} style={[styles.settingItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.settingLeft}>
                 <View style={[styles.settingIcon, { backgroundColor: `${setting.color}20` }]}>
                   <setting.icon size={20} color={setting.color} />
                 </View>
                 <View style={styles.settingContent}>
-                  <Text style={styles.settingTitle}>{setting.title}</Text>
-                  <Text style={styles.settingSubtitle}>{setting.subtitle}</Text>
+                  <Text style={[styles.settingTitle, { color: colors.text }]}>{setting.title}</Text>
+                  <Text style={[styles.settingSubtitle, { color: colors.textSecondary }]}>{setting.subtitle}</Text>
                 </View>
               </View>
               <Switch
                 value={settings[setting.key as keyof typeof settings] as boolean}
                 onValueChange={(value) => updateSetting(setting.key, value)}
-                trackColor={{ false: '#e5e7eb', true: '#bbf7d0' }}
-                thumbColor={settings[setting.key as keyof typeof settings] ? '#16a34a' : '#f3f4f6'}
+                trackColor={{ false: colors.border, true: colors.primaryLight }}
+                thumbColor={settings[setting.key as keyof typeof settings] ? colors.primary : colors.surface}
               />
             </View>
           ))}
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Data Management</Text>
-          <TouchableOpacity style={styles.dangerItem} onPress={handleDeleteAccount}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Data Management</Text>
+          <TouchableOpacity style={[styles.dangerItem, { backgroundColor: colors.card, borderColor: colors.error + '30' }]} onPress={handleDeleteAccount}>
             <View style={styles.dangerLeft}>
-              <View style={styles.dangerIcon}>
-                <Trash2 size={20} color="#dc2626" />
+              <View style={[styles.dangerIcon, { backgroundColor: colors.error + '20' }]}>
+                <Trash2 size={20} color={colors.error} />
               </View>
               <View style={styles.dangerContent}>
-                <Text style={styles.dangerTitle}>Delete Account</Text>
-                <Text style={styles.dangerSubtitle}>Permanently delete your account and data</Text>
+                <Text style={[styles.dangerTitle, { color: colors.error }]}>Delete Account</Text>
+                <Text style={[styles.dangerSubtitle, { color: colors.textSecondary }]}>Permanently delete your account and data</Text>
               </View>
             </View>
-            <ChevronRight size={16} color="#d1d5db" />
+            <ChevronRight size={16} color={colors.border} />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Your Privacy Matters</Text>
-          <Text style={styles.infoText}>
+        <View style={[styles.infoCard, { backgroundColor: colors.primaryLight + '20', borderColor: colors.primaryLight }]}>
+          <Text style={[styles.infoTitle, { color: colors.text }]}>Your Privacy Matters</Text>
+          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
             We take your privacy seriously. Your personal data is encrypted and stored securely. 
             You have full control over what information you share with us.
           </Text>
-          <TouchableOpacity style={styles.privacyPolicyButton}>
+          <TouchableOpacity style={[styles.privacyPolicyButton, { backgroundColor: colors.primary }]}>
             <Text style={styles.privacyPolicyText}>Read Privacy Policy</Text>
           </TouchableOpacity>
         </View>

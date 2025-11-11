@@ -7,12 +7,15 @@ import {
   TouchableOpacity,
   Switch,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { ArrowLeft, Bell, Truck, IndianRupee, MessageCircle, Zap } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function NotificationSettingsScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [settings, setSettings] = useState({
     pushNotifications: true,
     pickupReminders: true,
@@ -96,12 +99,13 @@ export default function NotificationSettingsScreen() {
   ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#111827" />
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -110,12 +114,12 @@ export default function NotificationSettingsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.masterToggle}>
+        <View style={[styles.masterToggle, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.masterToggleContent}>
-            <Bell size={24} color="#16a34a" />
+            <Bell size={24} color={colors.primary} />
             <View style={styles.masterToggleText}>
-              <Text style={styles.masterToggleTitle}>Push Notifications</Text>
-              <Text style={styles.masterToggleSubtitle}>
+              <Text style={[styles.masterToggleTitle, { color: colors.text }]}>Push Notifications</Text>
+              <Text style={[styles.masterToggleSubtitle, { color: colors.textSecondary }]}>
                 Enable or disable all push notifications
               </Text>
             </View>
@@ -123,30 +127,30 @@ export default function NotificationSettingsScreen() {
           <Switch
             value={settings.pushNotifications}
             onValueChange={(value) => updateSetting('pushNotifications', value)}
-            trackColor={{ false: '#e5e7eb', true: '#bbf7d0' }}
-            thumbColor={settings.pushNotifications ? '#16a34a' : '#f3f4f6'}
+            trackColor={{ false: colors.border, true: colors.primaryLight + '80' }}
+            thumbColor={settings.pushNotifications ? colors.primary : colors.card}
           />
         </View>
 
         {notificationGroups.map((group, groupIndex) => (
           <View key={groupIndex} style={styles.notificationGroup}>
-            <Text style={styles.groupTitle}>{group.title}</Text>
+            <Text style={[styles.groupTitle, { color: colors.text }]}>{group.title}</Text>
             {group.items.map((item) => (
-              <View key={item.key} style={styles.notificationItem}>
+              <View key={item.key} style={[styles.notificationItem, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={styles.notificationLeft}>
                   <View style={[styles.notificationIcon, { backgroundColor: `${item.color}20` }]}>
                     <item.icon size={20} color={item.color} />
                   </View>
                   <View style={styles.notificationContent}>
-                    <Text style={styles.notificationTitle}>{item.title}</Text>
-                    <Text style={styles.notificationSubtitle}>{item.subtitle}</Text>
+                    <Text style={[styles.notificationTitle, { color: colors.text }]}>{item.title}</Text>
+                    <Text style={[styles.notificationSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
                   </View>
                 </View>
                 <Switch
                   value={settings[item.key as keyof typeof settings] as boolean}
                   onValueChange={(value) => updateSetting(item.key, value)}
-                  trackColor={{ false: '#e5e7eb', true: '#bbf7d0' }}
-                  thumbColor={settings[item.key as keyof typeof settings] ? '#16a34a' : '#f3f4f6'}
+                  trackColor={{ false: colors.border, true: colors.primaryLight + '80' }}
+                  thumbColor={settings[item.key as keyof typeof settings] ? colors.primary : colors.card}
                   disabled={!settings.pushNotifications}
                 />
               </View>

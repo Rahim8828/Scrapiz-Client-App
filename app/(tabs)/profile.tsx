@@ -11,15 +11,18 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
-import { User, MapPin, Bell, Shield, CircleHelp as HelpCircle, Star, Gift, ChevronRight, Award, LogOut, Phone, Mail, Package, Clock, CheckCircle, Plus } from 'lucide-react-native';
+import { User, MapPin, Bell, Shield, CircleHelp as HelpCircle, Star, Gift, ChevronRight, Award, LogOut, Phone, Mail, Package, Clock, CheckCircle, Plus, Moon, Sun } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useProfile } from '../../contexts/ProfileContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import { wp, hp, fs, spacing, responsiveValue, MIN_TOUCH_SIZE } from '../../utils/responsive';
 
 const profileData = {
   name: 'Anas Farooqui',
@@ -54,6 +57,7 @@ export default function ProfileScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const { profile, loadProfile, updateProfile, isLoading } = useProfile();
   const { logout } = useAuth();
+  const { theme, setThemeMode, isDark, colors } = useTheme();
 
   // Reload profile when screen comes into focus
   useFocusEffect(
@@ -61,6 +65,12 @@ export default function ProfileScreen() {
       loadProfile();
     }, [])
   );
+
+  const toggleTheme = async () => {
+    // Toggle between light and dark mode (no auto for simple toggle)
+    const newTheme = isDark ? 'light' : 'dark';
+    await setThemeMode(newTheme);
+  };
 
   const getInitials = () => {
     return profile.fullName
@@ -211,12 +221,27 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <StatusBar barStyle="light-content" />
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
         <LinearGradient
-          colors={['#16a34a', '#15803d']}
+          colors={isDark ? ['#22c55e', '#16a34a'] : ['#16a34a', '#15803d']}
           style={styles.header}
         >
+          {/* Dark Mode Toggle Button - Top Right */}
+          <TouchableOpacity 
+            style={styles.themeToggleButton}
+            onPress={toggleTheme}
+            activeOpacity={0.7}
+          >
+            <View style={styles.themeToggleIcon}>
+              {isDark ? (
+                <Sun size={fs(20)} color="#ffffff" strokeWidth={2.5} />
+              ) : (
+                <Moon size={fs(20)} color="#ffffff" strokeWidth={2.5} />
+              )}
+            </View>
+          </TouchableOpacity>
+
           <View style={styles.profileContainer}>
             <TouchableOpacity onPress={handleProfileImagePick} style={styles.avatarWrapper}>
               {isLoading ? (
@@ -234,7 +259,7 @@ export default function ProfileScreen() {
                 </View>
               )}
               <View style={styles.plusIconContainer}>
-                <Plus size={16} color="#16a34a" strokeWidth={3} />
+                <Plus size={fs(16)} color="#16a34a" strokeWidth={3} />
               </View>
             </TouchableOpacity>
               <View style={styles.profileInfo}>
@@ -247,20 +272,20 @@ export default function ProfileScreen() {
       {/* Menu Sections */}
       {menuItems.map((section, sectionIndex) => (
         <View key={sectionIndex} style={styles.section}>
-          <Text style={styles.sectionTitle}>{section.section}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{section.section}</Text>
           {section.items.map((item, itemIndex) => (
             <TouchableOpacity 
               key={itemIndex} 
-              style={styles.menuItem}
+              style={[styles.menuItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={item.action}
             >
               <View style={styles.menuItemLeft}>
-                <View style={styles.menuItemIcon}>
-                  <item.icon size={20} color="#6b7280" />
+                <View style={[styles.menuItemIcon, { backgroundColor: colors.primary + '15' }]}>
+                  <item.icon size={fs(20)} color={colors.primary} />
                 </View>
                 <View style={styles.menuItemInfo}>
-                  <Text style={styles.menuItemTitle}>{item.title}</Text>
-                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                  <Text style={[styles.menuItemTitle, { color: colors.text }]}>{item.title}</Text>
+                  <Text style={[styles.menuItemSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
                 </View>
               </View>
               <View style={styles.menuItemRight}>
@@ -268,11 +293,11 @@ export default function ProfileScreen() {
                   <Switch
                     value={item.switchValue}
                     onValueChange={item.onSwitchChange}
-                    trackColor={{ false: '#e5e7eb', true: '#bbf7d0' }}
-                    thumbColor={item.switchValue ? '#16a34a' : '#f3f4f6'}
+                    trackColor={{ false: colors.border, true: colors.primary + '50' }}
+                    thumbColor={item.switchValue ? colors.primary : colors.textTertiary}
                   />
                 ) : (
-                  <ChevronRight size={16} color="#d1d5db" />
+                  <ChevronRight size={fs(16)} color={colors.textTertiary} />
                 )}
               </View>
             </TouchableOpacity>
@@ -282,17 +307,17 @@ export default function ProfileScreen() {
 
       {/* Environmental Impact */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Environmental Impact</Text>
-        <View style={styles.impactCard}>
+        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Environmental Impact</Text>
+        <View style={[styles.impactCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={styles.impactEmoji}>🌱</Text>
           <View style={styles.impactContent}>
-            <Text style={styles.impactTitle}>Great Job!</Text>
-            <Text style={styles.impactDescription}>
+            <Text style={[styles.impactTitle, { color: colors.text }]}>Great Job!</Text>
+            <Text style={[styles.impactDescription, { color: colors.textSecondary }]}>
               You've recycled {profileData.totalRecycled}kg of waste, helping save the environment!
             </Text>
             <View style={styles.impactStats}>
-              <Text style={styles.impactStat}>🌳 124 trees saved</Text>
-              <Text style={styles.impactStat}>💨 340kg CO₂ reduced</Text>
+              <Text style={[styles.impactStat, { color: colors.text }]}>🌳 124 trees saved</Text>
+              <Text style={[styles.impactStat, { color: colors.text }]}>💨 340kg CO₂ reduced</Text>
             </View>
           </View>
         </View>
@@ -301,16 +326,16 @@ export default function ProfileScreen() {
       {/* Logout */}
       <View style={styles.section}>
         <TouchableOpacity 
-          style={styles.logoutButton}
+          style={[styles.logoutButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={handleLogout}
         >
-          <LogOut size={20} color="#dc2626" />
+          <LogOut size={fs(20)} color="#dc2626" />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Version 1.0.0</Text>
+        <Text style={[styles.footerText, { color: colors.textTertiary }]}>Version 1.0.0</Text>
       </View>
     </ScrollView>
   );
@@ -322,11 +347,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
   },
   header: {
-    paddingTop: 80,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingTop: Platform.select({ ios: hp(8.5), android: hp(7.5) }), // Reduced from 9.8/8.6
+    paddingHorizontal: spacing(18), // Reduced from 20
+    paddingBottom: spacing(16), // Reduced from 20
+    borderBottomLeftRadius: spacing(24),
+    borderBottomRightRadius: spacing(24),
+  },
+  themeToggleButton: {
+    position: 'absolute',
+    top: Platform.select({ ios: hp(6.5), android: hp(5.2) }), // Moved down from 7/5.5
+    right: spacing(18), // Adjusted from 20
+    zIndex: 10,
+  },
+  themeToggleIcon: {
+    width: spacing(38), // Reduced from 42
+    height: spacing(38), // Reduced from 42
+    borderRadius: spacing(19), // Reduced from 21
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   profileContainer: {
     flexDirection: 'row',
@@ -334,12 +375,12 @@ const styles = StyleSheet.create({
   },
   avatarWrapper: {
     position: 'relative',
-    marginRight: 16,
+    marginRight: spacing(14), // Reduced from 16
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: wp(15), // Reduced from 17
+    height: wp(15), // Reduced from 17
+    borderRadius: wp(7.5), // Reduced from 8.5
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -347,9 +388,9 @@ const styles = StyleSheet.create({
     borderColor: 'white',
   },
   avatarImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: wp(15), // Reduced from 17
+    height: wp(15), // Reduced from 17
+    borderRadius: wp(7.5), // Reduced from 8.5
     borderWidth: 2,
     borderColor: 'white',
   },
@@ -357,9 +398,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: wp(5.5), // Reduced from 6.4
+    height: wp(5.5), // Reduced from 6.4
+    borderRadius: wp(2.75), // Reduced from 3.2
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
@@ -368,43 +409,44 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: 'white',
-    fontSize: 24,
+    fontSize: fs(22), // Reduced from 24
     fontFamily: 'Inter-Bold',
   },
   profileInfo: {
     flex: 1,
   },
   profileName: {
-    fontSize: 22,
+    fontSize: fs(20), // Reduced from 22
     fontWeight: 'bold',
     fontFamily: 'Inter-Bold',
     color: 'white',
   },
   profileEmail: {
-    fontSize: 14,
+    fontSize: fs(13), // Reduced from 14
     fontFamily: 'Inter-Regular',
     color: 'rgba(255,255,255,0.8)',
-    marginTop: 2,
+    marginTop: spacing(2),
   },
   section: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: spacing(20),
+    paddingVertical: spacing(16),
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 12,
+    marginBottom: spacing(12),
   },
   menuItem: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
+    borderRadius: spacing(12),
+    padding: spacing(16),
+    marginBottom: spacing(8),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    minHeight: MIN_TOUCH_SIZE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -417,36 +459,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuItemIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: wp(10.6),
+    height: wp(10.6),
+    borderRadius: wp(5.3),
     backgroundColor: '#f8fafc',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: spacing(12),
   },
   menuItemInfo: {
     flex: 1,
   },
   menuItemTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '500',
     color: '#111827',
     fontFamily: 'Inter-Medium',
-    marginBottom: 2,
+    marginBottom: spacing(2),
   },
   menuItemSubtitle: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
   menuItemRight: {
-    marginLeft: 12,
+    marginLeft: spacing(12),
   },
   impactCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: spacing(16),
+    padding: spacing(20),
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
@@ -456,42 +498,43 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   impactEmoji: {
-    fontSize: 48,
-    marginRight: 16,
+    fontSize: fs(48),
+    marginRight: spacing(16),
   },
   impactContent: {
     flex: 1,
   },
   impactTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 4,
+    marginBottom: spacing(4),
   },
   impactDescription: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    marginBottom: 8,
+    marginBottom: spacing(8),
   },
   impactStats: {
     flexDirection: 'row',
-    gap: 16,
+    gap: spacing(16),
     flexWrap: 'wrap',
   },
   impactStat: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#16a34a',
     fontFamily: 'Inter-Medium',
   },
   logoutButton: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: spacing(12),
+    padding: spacing(16),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: MIN_TOUCH_SIZE,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -499,18 +542,18 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   logoutText: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '500',
     color: '#dc2626',
     fontFamily: 'Inter-Medium',
-    marginLeft: 8,
+    marginLeft: spacing(8),
   },
   footer: {
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: spacing(20),
   },
   footerText: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#9ca3af',
     fontFamily: 'Inter-Regular',
   },

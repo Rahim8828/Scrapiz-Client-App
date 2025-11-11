@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
-
-const { width } = Dimensions.get('window');
+import { wp, hp, fs, spacing } from '../utils/responsive';
 
 const carouselData = [
   {
@@ -30,8 +29,8 @@ export default function CustomCarousel() {
     <View style={styles.carouselContainer}>
       <Carousel
         loop
-        width={width - 40}
-        height={width / 2}
+        width={wp(100) - spacing(40)}
+        height={wp(50)}
         autoPlay={true}
         data={carouselData}
         scrollAnimationDuration={1000}

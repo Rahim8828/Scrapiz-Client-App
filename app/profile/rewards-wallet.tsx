@@ -5,8 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { 
@@ -26,8 +26,8 @@ import {
   Info,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
-
-const { width } = Dimensions.get('window');
+import { useTheme } from '../../contexts/ThemeContext';
+import { wp, hp, fs, spacing } from '../../utils/responsive';
 
 interface Transaction {
   id: string;
@@ -41,6 +41,7 @@ interface Transaction {
 
 export default function RewardsWalletScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   
   // Wallet data
   const [walletBalance] = useState(120);
@@ -113,7 +114,8 @@ export default function RewardsWalletScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle="light-content" />
       {/* Header with Gradient */}
       <LinearGradient
         colors={['#16a34a', '#15803d', '#166534']}
@@ -193,70 +195,70 @@ export default function RewardsWalletScreen() {
       >
         {/* Stats */}
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <View style={styles.statIconWrapper}>
-              <TrendingUp size={20} color="#16a34a" />
+          <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: colors.primaryLight + '30' }]}>
+              <TrendingUp size={20} color={colors.primary} />
             </View>
-            <Text style={styles.statValue}>₹{totalEarned}</Text>
-            <Text style={styles.statLabel}>Referrals Earned</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>₹{totalEarned}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Referrals Earned</Text>
           </View>
 
-          <View style={styles.statCard}>
-            <View style={styles.statIconWrapper}>
+          <View style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.statIconWrapper, { backgroundColor: '#f59e0b20' }]}>
               <Zap size={20} color="#f59e0b" />
             </View>
-            <Text style={styles.statValue}>₹{totalSpent}</Text>
-            <Text style={styles.statLabel}>Withdrawn</Text>
+            <Text style={[styles.statValue, { color: colors.text }]}>₹{totalSpent}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Withdrawn</Text>
           </View>
         </View>
 
         {/* How It Works */}
-        <View style={styles.infoCard}>
+        <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.infoHeader}>
-            <View style={styles.infoIconBox}>
-              <Info size={20} color="#16a34a" />
+            <View style={[styles.infoIconBox, { backgroundColor: colors.primaryLight + '30' }]}>
+              <Info size={20} color={colors.primary} />
             </View>
-            <Text style={styles.infoTitle}>How Referral Wallet Works</Text>
+            <Text style={[styles.infoTitle, { color: colors.text }]}>How Referral Wallet Works</Text>
           </View>
           
           <View style={styles.infoContent}>
             <View style={styles.infoPoint}>
-              <View style={styles.infoDot} />
-              <Text style={styles.infoText}>
-                <Text style={styles.infoBold}>Sell scrap, get paid directly</Text> to your bank account
+              <View style={[styles.infoDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+                <Text style={[styles.infoBold, { color: colors.text }]}>Sell scrap, get paid directly</Text> to your bank account
               </Text>
             </View>
             
             <View style={styles.infoPoint}>
-              <View style={styles.infoDot} />
-              <Text style={styles.infoText}>
-                <Text style={styles.infoBold}>Referral bonus is separate</Text> - earn extra ₹20 per referral
+              <View style={[styles.infoDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+                <Text style={[styles.infoBold, { color: colors.text }]}>Referral bonus is separate</Text> - earn extra ₹20 per referral
               </Text>
             </View>
             
             <View style={styles.infoPoint}>
-              <View style={styles.infoDot} />
-              <Text style={styles.infoText}>
-                <Text style={styles.infoBold}>Withdraw anytime</Text> - minimum ₹100 to bank account
+              <View style={[styles.infoDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+                <Text style={[styles.infoBold, { color: colors.text }]}>Withdraw anytime</Text> - minimum ₹100 to bank account
               </Text>
             </View>
           </View>
 
           {/* Example Card */}
-          <View style={styles.exampleBox}>
-            <Text style={styles.exampleTitle}>💡 How it works:</Text>
+          <View style={[styles.exampleBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.exampleTitle, { color: colors.text }]}>💡 How it works:</Text>
             <View style={styles.exampleRow}>
-              <Text style={styles.exampleText}>Scrap Payment:</Text>
-              <Text style={styles.exampleValue}>Direct to Bank ✅</Text>
+              <Text style={[styles.exampleText, { color: colors.textSecondary }]}>Scrap Payment:</Text>
+              <Text style={[styles.exampleValue, { color: colors.text }]}>Direct to Bank ✅</Text>
             </View>
             <View style={styles.exampleRow}>
-              <Text style={styles.exampleText}>Referral Bonus:</Text>
-              <Text style={styles.exampleValueGreen}>In Wallet ₹120</Text>
+              <Text style={[styles.exampleText, { color: colors.textSecondary }]}>Referral Bonus:</Text>
+              <Text style={[styles.exampleValueGreen, { color: colors.primary }]}>In Wallet ₹120</Text>
             </View>
-            <View style={styles.exampleDivider} />
+            <View style={[styles.exampleDivider, { backgroundColor: colors.border }]} />
             <View style={styles.exampleRow}>
-              <Text style={styles.exampleTextBold}>Withdraw Option:</Text>
-              <Text style={styles.exampleValueBold}>Min ₹100</Text>
+              <Text style={[styles.exampleTextBold, { color: colors.text }]}>Withdraw Option:</Text>
+              <Text style={[styles.exampleValueBold, { color: colors.text }]}>Min ₹100</Text>
             </View>
           </View>
         </View>
@@ -291,44 +293,40 @@ export default function RewardsWalletScreen() {
         {/* Transaction History */}
         <View style={styles.historySection}>
           <View style={styles.historyHeader}>
-            <View style={styles.historyIconBox}>
-              <History size={20} color="#16a34a" />
+            <View style={[styles.historyIconBox, { backgroundColor: colors.primaryLight + '30' }]}>
+              <History size={20} color={colors.primary} />
             </View>
-            <Text style={styles.historyTitle}>Transaction History</Text>
+            <Text style={[styles.historyTitle, { color: colors.text }]}>Transaction History</Text>
           </View>
 
           <View style={styles.transactionsList}>
             {transactions.map((transaction, index) => (
-              <View key={transaction.id} style={styles.transactionCard}>
+              <View key={transaction.id} style={[styles.transactionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={styles.transactionLeft}>
                   <View style={[
                     styles.transactionIcon,
-                    transaction.type === 'earned' && styles.transactionIconEarned,
-                    transaction.type === 'spent' && styles.transactionIconSpent,
-                    transaction.type === 'pending' && styles.transactionIconPending,
+                    { backgroundColor: transaction.type === 'earned' ? colors.primaryLight + '30' : transaction.type === 'spent' ? colors.border : colors.primaryLight + '20' },
                   ]}>
                     {getTransactionIcon(transaction.icon)}
                   </View>
                   
                   <View style={styles.transactionDetails}>
-                    <Text style={styles.transactionTitle}>{transaction.title}</Text>
-                    <Text style={styles.transactionDesc}>{transaction.description}</Text>
-                    <Text style={styles.transactionDate}>{transaction.date}</Text>
+                    <Text style={[styles.transactionTitle, { color: colors.text }]}>{transaction.title}</Text>
+                    <Text style={[styles.transactionDesc, { color: colors.textSecondary }]}>{transaction.description}</Text>
+                    <Text style={[styles.transactionDate, { color: colors.textTertiary }]}>{transaction.date}</Text>
                   </View>
                 </View>
 
                 <View style={styles.transactionRight}>
                   <Text style={[
                     styles.transactionAmount,
-                    transaction.type === 'earned' && styles.transactionAmountEarned,
-                    transaction.type === 'spent' && styles.transactionAmountSpent,
-                    transaction.type === 'pending' && styles.transactionAmountPending,
+                    { color: transaction.type === 'earned' ? colors.primary : transaction.type === 'spent' ? colors.error : colors.textSecondary },
                   ]}>
                     {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount)}
                   </Text>
                   {transaction.type === 'pending' && (
-                    <View style={styles.pendingChip}>
-                      <Text style={styles.pendingChipText}>Pending</Text>
+                    <View style={[styles.pendingChip, { backgroundColor: colors.primaryLight + '20' }]}>
+                      <Text style={[styles.pendingChipText, { color: colors.textSecondary }]}>Pending</Text>
                     </View>
                   )}
                 </View>
@@ -338,12 +336,12 @@ export default function RewardsWalletScreen() {
         </View>
 
         {/* Bottom Tip */}
-        <View style={styles.tipCard}>
-          <View style={styles.tipIcon}>
-            <Target size={18} color="#16a34a" />
+        <View style={[styles.tipCard, { backgroundColor: colors.primaryLight + '15', borderColor: colors.primaryLight }]}>
+          <View style={[styles.tipIcon, { backgroundColor: colors.primaryLight + '30' }]}>
+            <Target size={18} color={colors.primary} />
           </View>
-          <Text style={styles.tipText}>
-            <Text style={styles.tipBold}>Remember:</Text> Your scrap selling payments go directly to your bank account. This wallet is only for referral bonuses - withdraw anytime once you reach ₹100!
+          <Text style={[styles.tipText, { color: colors.textSecondary }]}>
+            <Text style={[styles.tipBold, { color: colors.text }]}>Remember:</Text> Your scrap selling payments go directly to your bank account. This wallet is only for referral bonuses - withdraw anytime once you reach ₹100!
           </Text>
         </View>
       </ScrollView>

@@ -1,85 +1,92 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Platform } from 'react-native';
+import * as ExpoSplashScreen from 'expo-splash-screen';
 import SplashScreen from '../components/SplashScreen';
 import { useLocation } from '../contexts/LocationContext';
 import { useAuth } from '../contexts/AuthContext';
 
+if (Platform.OS === 'ios') {
+  ExpoSplashScreen.preventAutoHideAsync().catch(() => {});
+}
+
 export default function IndexScreen() {
   const router = useRouter();
   const [showSplash, setShowSplash] = useState(true);
-  const { currentLocation, serviceAvailable, locationSet, checkServiceAvailability } = useLocation();
+  const [appIsReady, setAppIsReady] = useState(false);
+  const { currentLocation, locationSet, checkServiceAvailability } = useLocation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        if (Platform.OS === 'ios') {
+          await ExpoSplashScreen.hideAsync();
+        }
+        setAppIsReady(true);
+      } catch (e) {
+        setAppIsReady(true);
+      }
+    }
+    prepare();
+  }, []);
 
   const handleSplashFinish = () => {
     setShowSplash(false);
-    handleNavigation();
   };
 
-  const handleNavigation = () => {
-    // Wait for auth to load
-    if (authLoading) {
-      return;
-    }
+  const handleNavigation = useCallback(() => {
+    if (authLoading) return;
 
-    console.log('🚀 Navigation Debug:', {
-      locationSet,
-      hasCurrentLocation: !!currentLocation,
-      serviceAvailable,
-      isAuthenticated,
-      currentLocation: currentLocation ? {
-        city: currentLocation.city,
-        latitude: currentLocation.latitude,
-        longitude: currentLocation.longitude,
-      } : null,
-    });
-
-    // First priority: Check if location has been set
-    if (!locationSet) {
-      console.log('➡️ Navigating to: location-permission (location not set)');
-      // Location not set yet - go to location permission screen
+    if (!locationSet || !currentLocation) {
       router.replace('/(auth)/location-permission');
       return;
     }
 
-    // Location set, check if we have location data
-    if (!currentLocation) {
-      console.log('➡️ Navigating to: location-permission (no location data)');
-      // Location set but no location data - go to permission screen to fetch
-      router.replace('/(auth)/location-permission');
-      return;
-    }
-
-    // We have permission and location - check if service is available
     const isServiceable = checkServiceAvailability();
-    console.log('🔍 Service check:', { isServiceable });
     
     if (isServiceable) {
-      // Service available - check authentication
-      if (isAuthenticated) {
-        console.log('➡️ Navigating to: tabs (authenticated)');
-        router.replace('/(tabs)');
-      } else {
-        console.log('➡️ Navigating to: login (not authenticated)');
-        router.replace('/(auth)/login');
-      }
+      router.replace(isAuthenticated ? '/(tabs)' : '/(auth)/login');
     } else {
-      console.log('➡️ Navigating to: service-unavailable');
-      // Service not available - show unavailable screen
       router.replace('/(auth)/service-unavailable');
     }
-  };
+  }, [authLoading, locationSet, currentLocation, isAuthenticated, router, checkServiceAvailability]);
+
+  useEffect(() => {
+    if (!showSplash && !authLoading && appIsReady) {
+      handleNavigation();
+    }
+  }, [showSplash, authLoading, appIsReady, handleNavigation]);
+
+  if (!appIsReady) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#16a34a" />
+      </View>
+    );
+  }
 
   if (showSplash) {
     return <SplashScreen onFinish={handleSplashFinish} />;
   }
 
-  return <View style={styles.container} />;
+  if (authLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#16a34a" />
+      </View>
+    );
+  }
+
+  return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

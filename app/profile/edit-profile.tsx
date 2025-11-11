@@ -11,12 +11,14 @@ import {
   Platform,
   Keyboard,
   Image,
+  StatusBar,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, User, Mail, Phone, MapPin, Save, Camera, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useProfile } from '../../contexts/ProfileContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { wp, hp, fs, spacing, MIN_TOUCH_SIZE } from '../../utils/responsive';
 
 type ValidationErrors = {
   fullName?: string;
@@ -28,6 +30,7 @@ type ValidationErrors = {
 export default function EditProfileScreen() {
   const router = useRouter();
   const { profile: contextProfile, updateProfile } = useProfile();
+  const { colors, isDark } = useTheme();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -246,16 +249,16 @@ export default function EditProfileScreen() {
 
   return (
     <KeyboardAvoidingView 
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
-      <StatusBar style="dark" />
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleDiscard}>
-          <ArrowLeft size={24} color="#111827" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }]} onPress={handleDiscard}>
+          <ArrowLeft size={fs(24)} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Edit Profile</Text>
         <TouchableOpacity 
           style={[
             styles.saveButton, 
@@ -264,7 +267,7 @@ export default function EditProfileScreen() {
           onPress={handleSave}
           disabled={!hasChanges || isLoading}
         >
-          <Save size={20} color={hasChanges && !isLoading ? "#16a34a" : "#9ca3af"} />
+          <Save size={fs(20)} color={hasChanges && !isLoading ? colors.primary : colors.textTertiary} />
         </TouchableOpacity>
       </View>
 
@@ -276,7 +279,7 @@ export default function EditProfileScreen() {
       >
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
+          <View style={[styles.avatarContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {formData.profileImage ? (
               <>
                 <Image source={{ uri: formData.profileImage }} style={styles.avatarImage} />
@@ -284,19 +287,19 @@ export default function EditProfileScreen() {
                   style={styles.removeImageButton}
                   onPress={handleRemoveImage}
                 >
-                  <X size={16} color="white" />
+                  <X size={fs(16)} color="white" />
                 </TouchableOpacity>
               </>
             ) : (
-              <Text style={styles.avatarText}>{getInitials()}</Text>
+              <Text style={[styles.avatarText, { color: colors.text }]}>{getInitials()}</Text>
             )}
           </View>
           <TouchableOpacity 
-            style={styles.changePhotoButton}
+            style={[styles.changePhotoButton, { backgroundColor: colors.card, borderColor: colors.border }]}
             onPress={handlePickImage}
           >
-            <Camera size={16} color="#16a34a" />
-            <Text style={styles.changePhotoText}>
+            <Camera size={fs(16)} color={colors.primary} />
+            <Text style={[styles.changePhotoText, { color: colors.primary }]}>
               {formData.profileImage ? 'Change Photo' : 'Add Photo'}
             </Text>
           </TouchableOpacity>
@@ -305,21 +308,22 @@ export default function EditProfileScreen() {
         <View style={styles.formSection}>
           {/* Full Name Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Full Name *</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Full Name *</Text>
             <View style={[
               styles.inputWrapper,
+              { backgroundColor: colors.card, borderColor: colors.border },
               errors.fullName && styles.inputWrapperError
             ]}>
-              <User size={20} color={errors.fullName ? "#ef4444" : "#6b7280"} style={styles.inputIcon} />
+              <User size={fs(20)} color={errors.fullName ? "#ef4444" : colors.textSecondary} style={styles.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 value={formData.fullName}
                 onChangeText={(text) => {
                   setFormData(prev => ({ ...prev, fullName: text }));
                   clearError('fullName');
                 }}
                 placeholder="Enter your full name"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textTertiary}
                 autoCapitalize="words"
                 returnKeyType="next"
                 onSubmitEditing={() => emailRef.current?.focus()}
@@ -333,22 +337,23 @@ export default function EditProfileScreen() {
 
           {/* Email Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email Address *</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Email Address *</Text>
             <View style={[
               styles.inputWrapper,
+              { backgroundColor: colors.card, borderColor: colors.border },
               errors.email && styles.inputWrapperError
             ]}>
-              <Mail size={20} color={errors.email ? "#ef4444" : "#6b7280"} style={styles.inputIcon} />
+              <Mail size={fs(20)} color={errors.email ? "#ef4444" : colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 ref={emailRef}
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 value={formData.email}
                 onChangeText={(text) => {
                   setFormData(prev => ({ ...prev, email: text }));
                   clearError('email');
                 }}
                 placeholder="Enter your email"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textTertiary}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
@@ -364,15 +369,16 @@ export default function EditProfileScreen() {
 
           {/* Phone Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Phone Number *</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Phone Number *</Text>
             <View style={[
               styles.inputWrapper,
+              { backgroundColor: colors.card, borderColor: colors.border },
               errors.phone && styles.inputWrapperError
             ]}>
-              <Phone size={20} color={errors.phone ? "#ef4444" : "#6b7280"} style={styles.inputIcon} />
+              <Phone size={fs(20)} color={errors.phone ? "#ef4444" : colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 ref={phoneRef}
-                style={styles.input}
+                style={[styles.input, { color: colors.text }]}
                 value={formData.phone}
                 onChangeText={(text) => {
                   // Only allow digits
@@ -383,7 +389,7 @@ export default function EditProfileScreen() {
                   }
                 }}
                 placeholder="Enter 10-digit phone number"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textTertiary}
                 keyboardType="phone-pad"
                 maxLength={10}
                 returnKeyType="next"
@@ -394,27 +400,28 @@ export default function EditProfileScreen() {
             {errors.phone && (
               <Text style={styles.errorText}>{errors.phone}</Text>
             )}
-            <Text style={styles.helperText}>Enter phone number without country code</Text>
+            <Text style={[styles.helperText, { color: colors.textSecondary }]}>Enter phone number without country code</Text>
           </View>
 
           {/* Address Input */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Address *</Text>
+            <Text style={[styles.inputLabel, { color: colors.text }]}>Address *</Text>
             <View style={[
               styles.inputWrapper,
+              { backgroundColor: colors.card, borderColor: colors.border },
               errors.address && styles.inputWrapperError
             ]}>
-              <MapPin size={20} color={errors.address ? "#ef4444" : "#6b7280"} style={styles.inputIcon} />
+              <MapPin size={fs(20)} color={errors.address ? "#ef4444" : colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 ref={addressRef}
-                style={[styles.input, styles.textArea]}
+                style={[styles.input, styles.textArea, { color: colors.text }]}
                 value={formData.address}
                 onChangeText={(text) => {
                   setFormData(prev => ({ ...prev, address: text }));
                   clearError('address');
                 }}
                 placeholder="Enter your complete address"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textTertiary}
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
@@ -431,23 +438,24 @@ export default function EditProfileScreen() {
         {/* Update Button */}
         <TouchableOpacity 
           style={[
-            styles.updateButton, 
+            styles.updateButton,
+            { backgroundColor: hasChanges && !isLoading ? colors.primary : colors.border },
             (!hasChanges || isLoading) && styles.updateButtonDisabled
           ]}
           onPress={handleSave}
           disabled={!hasChanges || isLoading}
         >
-          <Text style={styles.updateButtonText}>
+          <Text style={[styles.updateButtonText, { color: hasChanges && !isLoading ? '#ffffff' : colors.textSecondary }]}>
             {isLoading ? 'Updating...' : hasChanges ? 'Save Changes' : 'No Changes'}
           </Text>
         </TouchableOpacity>
 
         {hasChanges && (
           <TouchableOpacity 
-            style={styles.discardButton}
+            style={[styles.discardButton, { backgroundColor: colors.card, borderColor: colors.border }]}
             onPress={handleDiscard}
           >
-            <Text style={styles.discardButtonText}>Discard Changes</Text>
+            <Text style={[styles.discardButtonText, { color: colors.error }]}>Discard Changes</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -462,9 +470,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingTop: Platform.select({ ios: hp(7.4), android: hp(6.2) }),
+    paddingHorizontal: spacing(20),
+    paddingBottom: spacing(20),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -475,23 +483,23 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: wp(10.6),
+    height: wp(10.6),
+    borderRadius: wp(5.3),
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: fs(20),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
   },
   saveButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: wp(10.6),
+    height: wp(10.6),
+    borderRadius: wp(5.3),
     backgroundColor: '#f0fdf4',
     justifyContent: 'center',
     alignItems: 'center',
@@ -503,24 +511,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: Platform.OS === 'android' ? 100 : 80,
+    padding: spacing(20),
+    paddingBottom: Platform.OS === 'android' ? hp(12.3) : hp(9.8),
   },
   avatarSection: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing(32),
   },
   avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: wp(26.6),
+    height: wp(26.6),
+    borderRadius: wp(13.3),
     backgroundColor: '#16a34a',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing(16),
   },
   avatarText: {
-    fontSize: 36,
+    fontSize: fs(36),
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',
@@ -528,27 +536,28 @@ const styles = StyleSheet.create({
   changePhotoButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    gap: 6,
+    paddingVertical: spacing(8),
+    paddingHorizontal: spacing(16),
+    gap: spacing(6),
+    minHeight: MIN_TOUCH_SIZE,
   },
   changePhotoText: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
   },
   avatarImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: wp(26.6),
+    height: wp(26.6),
+    borderRadius: wp(13.3),
   },
   removeImageButton: {
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: wp(9.6),
+    height: wp(9.6),
+    borderRadius: wp(4.8),
     backgroundColor: '#ef4444',
     justifyContent: 'center',
     alignItems: 'center',
@@ -556,87 +565,90 @@ const styles = StyleSheet.create({
     borderColor: 'white',
   },
   formSection: {
-    marginBottom: 32,
+    marginBottom: spacing(32),
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: spacing(20),
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 8,
+    marginBottom: spacing(8),
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: 'center', // Changed from 'flex-start' to 'center' for proper alignment
+    alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: spacing(12),
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing(16),
+    paddingVertical: spacing(12),
+    minHeight: MIN_TOUCH_SIZE,
   },
   inputWrapperError: {
     borderColor: '#ef4444',
     borderWidth: 2,
   },
   inputIcon: {
-    marginRight: 12,
+    marginRight: spacing(12),
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: fs(16),
     color: '#111827',
     fontFamily: 'Inter-Regular',
   },
   textArea: {
-    minHeight: 80,
+    minHeight: hp(9.8),
     textAlignVertical: 'top',
   },
   errorText: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#ef4444',
     fontFamily: 'Inter-Medium',
-    marginTop: 6,
-    marginLeft: 4,
+    marginTop: spacing(6),
+    marginLeft: spacing(4),
   },
   helperText: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    marginTop: 6,
-    marginLeft: 4,
+    marginTop: spacing(6),
+    marginLeft: spacing(4),
   },
   updateButton: {
     backgroundColor: '#16a34a',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: spacing(12),
+    paddingVertical: spacing(16),
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing(12),
+    minHeight: MIN_TOUCH_SIZE,
   },
   updateButtonDisabled: {
     opacity: 0.5,
     backgroundColor: '#9ca3af',
   },
   updateButtonText: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',
   },
   discardButton: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: spacing(12),
+    paddingVertical: spacing(16),
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing(20),
     borderWidth: 1,
     borderColor: '#e5e7eb',
+    minHeight: MIN_TOUCH_SIZE,
   },
   discardButtonText: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#6b7280',
     fontFamily: 'Inter-SemiBold',

@@ -4,13 +4,12 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { User } from 'lucide-react-native';
 import LocationSelector from './LocationSelector';
 import ScrapizLogo from './ScrapizLogo';
-
-const { width } = Dimensions.get('window');
+import { wp, hp, fs, spacing } from '../utils/responsive';
 
 interface AppHeaderProps {
   coinsBalance?: number;
@@ -52,7 +51,7 @@ export default function AppHeader({ coinsBalance = 100, showLogo = true }: AppHe
             style={styles.profileButton}
             onPress={() => router.push('/profile')}
           >
-            <User size={22} color="#16a34a" />
+            <User size={fs(22)} color="#16a34a" />
           </TouchableOpacity>
         </View>
       </View>
@@ -63,9 +62,9 @@ export default function AppHeader({ coinsBalance = 100, showLogo = true }: AppHe
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'white',
-    paddingTop: Platform.select({ ios: 60, android: 50 }),
-    paddingBottom: 12,
-    paddingHorizontal: 16,
+    paddingTop: Platform.select({ ios: hp(7.4), android: hp(6.2) }), // 60/50px
+    paddingBottom: spacing(12),
+    paddingHorizontal: spacing(16),
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
@@ -73,11 +72,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: spacing(12),
   },
   leftSection: {
     flex: 1,
-    maxWidth: 180,
+    maxWidth: wp(48), // ~180px responsive
   },
   centerSection: {
     position: 'absolute',
@@ -89,38 +88,39 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: spacing(10),
   },
   coinsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(22, 163, 74, 0.1)',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    gap: 6,
+    paddingVertical: spacing(6),
+    paddingHorizontal: spacing(10),
+    borderRadius: spacing(20),
+    gap: spacing(6),
+    minHeight: hp(4.9), // ~40px
   },
   coinsIcon: {
-    fontSize: 18,
+    fontSize: fs(18),
   },
   coinsInfo: {
     alignItems: 'flex-start',
   },
   coinsLabel: {
-    fontSize: 9,
+    fontSize: fs(9),
     color: '#16a34a',
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   coinsValue: {
-    fontSize: 15,
+    fontSize: fs(15),
     color: '#16a34a',
     fontWeight: '700',
   },
   profileButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: wp(11.2), // ~42px
+    height: wp(11.2),
+    borderRadius: wp(5.6), // Perfect circle
     backgroundColor: 'rgba(22, 163, 74, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',

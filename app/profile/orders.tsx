@@ -8,14 +8,16 @@ import {
   Alert,
   Image,
   Platform,
+  StatusBar,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
 import { ArrowLeft, Package, Clock, CheckCircle, X, MapPin, Calendar, IndianRupee, User, Phone } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { mockOrders, getStatusColor, getStatusText, type Order } from '../../data/orderData';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function OrdersScreen() {
   const router = useRouter();
+  const { colors, isDark } = useTheme();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
   const filterOptions = [
@@ -44,44 +46,48 @@ export default function OrdersScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#111827" />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }]} onPress={() => router.back()}>
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>My Orders</Text>
-          <Text style={styles.headerSubtitle}>{mockOrders.length} orders</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>My Orders</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>{mockOrders.length} orders</Text>
         </View>
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
+      <View style={[styles.filterContainer, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
           {filterOptions.map((option) => (
             <TouchableOpacity
               key={option.key}
               style={[
                 styles.filterTab,
-                selectedFilter === option.key && styles.filterTabActive
+                { backgroundColor: colors.card, borderColor: colors.border },
+                selectedFilter === option.key && { backgroundColor: colors.primary }
               ]}
               onPress={() => setSelectedFilter(option.key)}
             >
               <Text style={[
                 styles.filterTabText,
-                selectedFilter === option.key && styles.filterTabTextActive
+                { color: colors.textSecondary },
+                selectedFilter === option.key && { color: '#ffffff' }
               ]}>
                 {option.label}
               </Text>
               <View style={[
                 styles.filterCount,
-                selectedFilter === option.key && styles.filterCountActive
+                { backgroundColor: colors.background },
+                selectedFilter === option.key && { backgroundColor: 'rgba(255,255,255,0.2)' }
               ]}>
                 <Text style={[
                   styles.filterCountText,
-                  selectedFilter === option.key && styles.filterCountTextActive
+                  { color: colors.text },
+                  selectedFilter === option.key && { color: '#ffffff' }
                 ]}>
                   {option.count}
                 </Text>
@@ -101,14 +107,14 @@ export default function OrdersScreen() {
           filteredOrders.map((order) => (
             <TouchableOpacity
               key={order.id}
-              style={styles.orderCard}
+              style={[styles.orderCard, { backgroundColor: colors.card, borderColor: colors.border }]}
               onPress={() => handleOrderPress(order)}
               activeOpacity={0.7}
             >
               <View style={styles.orderHeader}>
                 <View style={styles.orderInfo}>
-                  <Text style={styles.orderNumber}>{order.orderNumber}</Text>
-                  <Text style={styles.orderDate}>{order.scheduledDate} • {order.scheduledTime}</Text>
+                  <Text style={[styles.orderNumber, { color: colors.text }]}>{order.orderNumber}</Text>
+                  <Text style={[styles.orderDate, { color: colors.textSecondary }]}>{order.scheduledDate} • {order.scheduledTime}</Text>
                 </View>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) + '20' }]}>
                   {getStatusIcon(order.status)}
@@ -152,13 +158,13 @@ export default function OrdersScreen() {
                   {order.items.slice(0, 3).map((item, index) => (
                     <View key={index} style={styles.orderItem}>
                       <Image source={item.image} style={styles.orderItemImage} />
-                      <Text style={styles.orderItemName}>{item.name}</Text>
-                      <Text style={styles.orderItemQuantity}>{item.quantity}kg</Text>
-                      <Text style={styles.orderItemRate}>₹{item.rate}/kg</Text>
+                      <Text style={[styles.orderItemName, { color: colors.textSecondary }]}>{item.name}</Text>
+                      <Text style={[styles.orderItemQuantity, { color: colors.textTertiary }]}>{item.quantity}kg</Text>
+                      <Text style={[styles.orderItemRate, { color: colors.primary }]}>₹{item.rate}/kg</Text>
                     </View>
                   ))}
                   {order.items.length > 3 && (
-                    <Text style={styles.moreItemsText}>+{order.items.length - 3} more items</Text>
+                    <Text style={[styles.moreItemsText, { color: colors.textTertiary }]}>+{order.items.length - 3} more items</Text>
                   )}
                 </View>
               )}

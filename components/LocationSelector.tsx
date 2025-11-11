@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { ChevronDown, MapPin, Plus, X, Home, Building } from 'lucide-react-native';
 import { useLocation, SavedLocation } from '../contexts/LocationContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function LocationSelector() {
   const {
@@ -24,6 +25,7 @@ export default function LocationSelector() {
     selectLocation,
     saveLocation,
   } = useLocation();
+  const { colors, isDark } = useTheme();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -133,17 +135,17 @@ export default function LocationSelector() {
         onRequestClose={() => setIsModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             {/* Header */}
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Your Location</Text>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Your Location</Text>
               <TouchableOpacity
                 onPress={() => {
                   setIsModalVisible(false);
                   setShowManualEntry(false);
                 }}
               >
-                <X size={24} color="#6b7280" />
+                <X size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -153,20 +155,20 @@ export default function LocationSelector() {
                 {savedLocations.length > 0 && (
                   <>
                     <View style={styles.sectionHeader}>
-                      <Text style={styles.sectionTitle}>Recent Locations</Text>
+                      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Recent Locations</Text>
                     </View>
                     {savedLocations.map((location) => (
                       <TouchableOpacity
                         key={location.id}
-                        style={styles.locationOption}
+                        style={[styles.locationOption, { backgroundColor: colors.card }]}
                         onPress={() => handleSelectSavedLocation(location)}
                       >
-                        <View style={styles.optionIconContainer}>
-                          <MapPin size={20} color="#6b7280" />
+                        <View style={[styles.optionIconContainer, { backgroundColor: colors.surface }]}>
+                          <MapPin size={20} color={colors.textSecondary} />
                         </View>
                         <View style={styles.optionTextContainer}>
-                          <Text style={styles.optionTitle}>{location.label}</Text>
-                          <Text style={styles.optionSubtitle} numberOfLines={1}>
+                          <Text style={[styles.optionTitle, { color: colors.text }]}>{location.label}</Text>
+                          <Text style={[styles.optionSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
                             {location.address}, {location.city}
                           </Text>
                         </View>
@@ -177,11 +179,11 @@ export default function LocationSelector() {
 
                 {/* Add New Address */}
                 <TouchableOpacity
-                  style={styles.addNewButton}
+                  style={[styles.addNewButton, { backgroundColor: colors.primaryLight + '15', borderColor: colors.primary }]}
                   onPress={() => setShowManualEntry(true)}
                 >
-                  <Plus size={20} color="#16a34a" />
-                  <Text style={styles.addNewText}>Add New Address</Text>
+                  <Plus size={20} color={colors.primary} />
+                  <Text style={[styles.addNewText, { color: colors.primary }]}>Add New Address</Text>
                 </TouchableOpacity>
               </ScrollView>
             ) : (
@@ -189,10 +191,11 @@ export default function LocationSelector() {
               <ScrollView style={styles.modalScroll}>
                 <View style={styles.formContainer}>
                   {/* Label Field */}
-                  <Text style={styles.formLabel}>Label *</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Label *</Text>
                   <TextInput
-                    style={[styles.formInput, formErrors.label && styles.formInputError]}
+                    style={[styles.formInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, formErrors.label && styles.formInputError]}
                     placeholder="e.g., Home, Office, Other"
+                    placeholderTextColor={colors.textTertiary}
                     value={manualAddress.label}
                     onChangeText={(text) => {
                       setManualAddress({ ...manualAddress, label: text });
@@ -206,55 +209,62 @@ export default function LocationSelector() {
                   {formErrors.label && <Text style={styles.errorText}>{formErrors.label}</Text>}
 
                   {/* Type Selection */}
-                  <Text style={styles.formLabel}>Type</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Type</Text>
                   <View style={styles.typeButtons}>
                     <TouchableOpacity
                       style={[
                         styles.typeButton,
-                        manualAddress.type === 'home' && styles.typeButtonActive
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        manualAddress.type === 'home' && [styles.typeButtonActive, { backgroundColor: colors.primaryLight + '30', borderColor: colors.primary }]
                       ]}
                       onPress={() => setManualAddress({ ...manualAddress, type: 'home' })}
                     >
-                      <Home size={18} color={manualAddress.type === 'home' ? '#16a34a' : '#6b7280'} />
+                      <Home size={18} color={manualAddress.type === 'home' ? colors.primary : colors.textSecondary} />
                       <Text style={[
                         styles.typeButtonText,
-                        manualAddress.type === 'home' && styles.typeButtonTextActive
+                        { color: colors.textSecondary },
+                        manualAddress.type === 'home' && [styles.typeButtonTextActive, { color: colors.primary }]
                       ]}>Home</Text>
                     </TouchableOpacity>
                     
                     <TouchableOpacity
                       style={[
                         styles.typeButton,
-                        manualAddress.type === 'office' && styles.typeButtonActive
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        manualAddress.type === 'office' && [styles.typeButtonActive, { backgroundColor: colors.primaryLight + '30', borderColor: colors.primary }]
                       ]}
                       onPress={() => setManualAddress({ ...manualAddress, type: 'office' })}
                     >
-                      <Building size={18} color={manualAddress.type === 'office' ? '#16a34a' : '#6b7280'} />
+                      <Building size={18} color={manualAddress.type === 'office' ? colors.primary : colors.textSecondary} />
                       <Text style={[
                         styles.typeButtonText,
-                        manualAddress.type === 'office' && styles.typeButtonTextActive
+                        { color: colors.textSecondary },
+                        manualAddress.type === 'office' && [styles.typeButtonTextActive, { color: colors.primary }]
                       ]}>Office</Text>
                     </TouchableOpacity>
                     
                     <TouchableOpacity
                       style={[
                         styles.typeButton,
-                        manualAddress.type === 'other' && styles.typeButtonActive
+                        { backgroundColor: colors.card, borderColor: colors.border },
+                        manualAddress.type === 'other' && [styles.typeButtonActive, { backgroundColor: colors.primaryLight + '30', borderColor: colors.primary }]
                       ]}
                       onPress={() => setManualAddress({ ...manualAddress, type: 'other' })}
                     >
-                      <MapPin size={18} color={manualAddress.type === 'other' ? '#16a34a' : '#6b7280'} />
+                      <MapPin size={18} color={manualAddress.type === 'other' ? colors.primary : colors.textSecondary} />
                       <Text style={[
                         styles.typeButtonText,
-                        manualAddress.type === 'other' && styles.typeButtonTextActive
+                        { color: colors.textSecondary },
+                        manualAddress.type === 'other' && [styles.typeButtonTextActive, { color: colors.primary }]
                       ]}>Other</Text>
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={styles.formLabel}>Area/Street *</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Area/Street *</Text>
                   <TextInput
-                    style={[styles.formInput, formErrors.area && styles.formInputError]}
+                    style={[styles.formInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, formErrors.area && styles.formInputError]}
                     placeholder="Enter area or street"
+                    placeholderTextColor={colors.textTertiary}
                     value={manualAddress.area}
                     onChangeText={(text) => {
                       setManualAddress({ ...manualAddress, area: text });
@@ -268,11 +278,12 @@ export default function LocationSelector() {
                   />
                   {formErrors.area && <Text style={styles.errorText}>{formErrors.area}</Text>}
 
-                  <Text style={styles.formLabel}>City *</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>City *</Text>
                   <TextInput
                     ref={cityInputRef}
-                    style={[styles.formInput, formErrors.city && styles.formInputError]}
+                    style={[styles.formInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, formErrors.city && styles.formInputError]}
                     placeholder="Enter city"
+                    placeholderTextColor={colors.textTertiary}
                     value={manualAddress.city}
                     onChangeText={(text) => {
                       setManualAddress({ ...manualAddress, city: text });
@@ -286,11 +297,12 @@ export default function LocationSelector() {
                   />
                   {formErrors.city && <Text style={styles.errorText}>{formErrors.city}</Text>}
 
-                  <Text style={styles.formLabel}>State *</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>State *</Text>
                   <TextInput
                     ref={stateInputRef}
-                    style={[styles.formInput, formErrors.state && styles.formInputError]}
+                    style={[styles.formInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, formErrors.state && styles.formInputError]}
                     placeholder="Enter state"
+                    placeholderTextColor={colors.textTertiary}
                     value={manualAddress.state}
                     onChangeText={(text) => {
                       setManualAddress({ ...manualAddress, state: text });
@@ -304,11 +316,12 @@ export default function LocationSelector() {
                   />
                   {formErrors.state && <Text style={styles.errorText}>{formErrors.state}</Text>}
 
-                  <Text style={styles.formLabel}>Pincode *</Text>
+                  <Text style={[styles.formLabel, { color: colors.text }]}>Pincode *</Text>
                   <TextInput
                     ref={pincodeInputRef}
-                    style={[styles.formInput, formErrors.pincode && styles.formInputError]}
+                    style={[styles.formInput, { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }, formErrors.pincode && styles.formInputError]}
                     placeholder="Enter 6-digit pincode"
+                    placeholderTextColor={colors.textTertiary}
                     value={manualAddress.pincode}
                     onChangeText={(text) => {
                       // Only allow numbers
@@ -328,6 +341,7 @@ export default function LocationSelector() {
                   <TouchableOpacity
                     style={[
                       styles.submitButton,
+                      { backgroundColor: colors.primary },
                       (!manualAddress.label.trim() ||
                         !manualAddress.area.trim() ||
                         !manualAddress.city.trim() ||
@@ -352,7 +366,7 @@ export default function LocationSelector() {
                     style={styles.backButton}
                     onPress={() => setShowManualEntry(false)}
                   >
-                    <Text style={styles.backButtonText}>Back</Text>
+                    <Text style={[styles.backButtonText, { color: colors.textSecondary }]}>Back</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -432,7 +446,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: 'white',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '80%',
@@ -444,12 +457,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
   },
   modalScroll: {
     padding: 20,
@@ -458,7 +469,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f9fafb',
     borderRadius: 12,
     marginBottom: 12,
     gap: 12,
@@ -466,7 +476,6 @@ const styles = StyleSheet.create({
   optionIconContainer: {
     width: 40,
     height: 40,
-    backgroundColor: 'white',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -477,12 +486,10 @@ const styles = StyleSheet.create({
   optionTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#111827',
     marginBottom: 4,
   },
   optionSubtitle: {
     fontSize: 13,
-    color: '#6b7280',
   },
   errorContainer: {
     padding: 12,
@@ -501,7 +508,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -510,10 +516,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
-    backgroundColor: 'rgba(22, 163, 74, 0.05)',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#16a34a',
     borderStyle: 'dashed',
     gap: 8,
     marginTop: 8,
@@ -521,7 +525,6 @@ const styles = StyleSheet.create({
   addNewText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#16a34a',
   },
   formContainer: {
     gap: 16,
@@ -529,24 +532,19 @@ const styles = StyleSheet.create({
   formLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
     marginBottom: 8,
   },
   formInput: {
-    backgroundColor: '#f9fafb',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     padding: 16,
     fontSize: 15,
-    color: '#111827',
   },
   formInputError: {
     borderColor: '#ef4444',
     backgroundColor: '#fef2f2',
   },
   submitButton: {
-    backgroundColor: '#16a34a',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -567,7 +565,6 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 15,
     fontWeight: '500',
-    color: '#6b7280',
   },
   typeButtons: {
     flexDirection: 'row',
@@ -580,23 +577,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 10,
-    backgroundColor: '#f9fafb',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     gap: 6,
   },
   typeButtonActive: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#16a34a',
   },
   typeButtonText: {
     fontSize: 12,
-    color: '#6b7280',
     fontWeight: '500',
   },
   typeButtonTextActive: {
-    color: '#16a34a',
     fontWeight: '600',
   },
 });

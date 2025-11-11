@@ -7,27 +7,31 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  StatusBar,
 } from 'react-native';
 import { ArrowLeft, MapPin, Calendar, Clock, Phone, IndianRupee, Package, CheckCircle, X } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getOrderById, getStatusColor, getStatusText, updateOrderStatus } from '../../../data/orderData';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export default function OrderDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { colors, isDark } = useTheme();
   const order = getOrderById(id as string);
 
   if (!order) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <ArrowLeft size={24} color="#111827" />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }]} onPress={() => router.back()}>
+            <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Order Not Found</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Order Not Found</Text>
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Order not found</Text>
+          <Text style={[styles.errorText, { color: colors.textSecondary }]}>Order not found</Text>
         </View>
       </View>
     );
@@ -65,24 +69,26 @@ export default function OrderDetailScreen() {
   const canCancelOrder = order.status === 'pending' || order.status === 'scheduled';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+      
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <ArrowLeft size={24} color="#111827" />
+      <View style={[styles.header, { backgroundColor: colors.surface }]}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: colors.card }]} onPress={() => router.back()}>
+          <ArrowLeft size={24} color={colors.text} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Order Details</Text>
-          <Text style={styles.headerSubtitle}>{order.orderNumber}</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Order Details</Text>
+          <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>{order.orderNumber}</Text>
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
         {/* Order Status */}
-        <View style={styles.statusCard}>
+        <View style={[styles.statusCard, { backgroundColor: colors.card }]}>
           <View style={styles.statusHeader}>
             {getStatusIcon(order.status)}
-            <Text style={styles.statusTitle}>Order Status</Text>
+            <Text style={[styles.statusTitle, { color: colors.text }]}>Order Status</Text>
           </View>
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) + '20' }]}>
             <Text style={[styles.statusText, { color: getStatusColor(order.status) }]}>
@@ -94,84 +100,84 @@ export default function OrderDetailScreen() {
         {/* Order Items or Service Details */}
         {order.type === 'service' && order.serviceDetails ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Service Details</Text>
-            <View style={styles.itemsCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Service Details</Text>
+            <View style={[styles.itemsCard, { backgroundColor: colors.card }]}>
               <View style={styles.serviceDetailContainer}>
                 <View style={styles.serviceMainInfo}>
-                  <Package size={32} color="#16a34a" />
+                  <Package size={32} color={colors.primary} />
                   <View style={styles.serviceTextInfo}>
-                    <Text style={styles.serviceNameLarge}>{order.serviceDetails.serviceName}</Text>
-                    <Text style={styles.serviceTypeBadge}>Service Booking</Text>
+                    <Text style={[styles.serviceNameLarge, { color: colors.text }]}>{order.serviceDetails.serviceName}</Text>
+                    <Text style={[styles.serviceTypeBadge, { color: colors.primary, backgroundColor: colors.primaryLight + '30' }]}>Service Booking</Text>
                   </View>
                 </View>
                 
-                <View style={styles.serviceDivider} />
+                <View style={[styles.serviceDivider, { backgroundColor: colors.border }]} />
                 
                 <View style={styles.customerDetailsSection}>
-                  <Text style={styles.customerSectionTitle}>Customer Information</Text>
+                  <Text style={[styles.customerSectionTitle, { color: colors.text }]}>Customer Information</Text>
                   <View style={styles.customerDetailRow}>
-                    <Text style={styles.customerLabel}>Name:</Text>
-                    <Text style={styles.customerValue}>{order.serviceDetails.customerName}</Text>
+                    <Text style={[styles.customerLabel, { color: colors.textSecondary }]}>Name:</Text>
+                    <Text style={[styles.customerValue, { color: colors.text }]}>{order.serviceDetails.customerName}</Text>
                   </View>
                   <View style={styles.customerDetailRow}>
-                    <Text style={styles.customerLabel}>Phone:</Text>
-                    <Text style={styles.customerValue}>{order.serviceDetails.customerPhone}</Text>
+                    <Text style={[styles.customerLabel, { color: colors.textSecondary }]}>Phone:</Text>
+                    <Text style={[styles.customerValue, { color: colors.text }]}>{order.serviceDetails.customerPhone}</Text>
                   </View>
                   {order.serviceDetails.notes && (
                     <View style={styles.customerDetailRow}>
-                      <Text style={styles.customerLabel}>Preferred Time:</Text>
-                      <Text style={styles.customerValue}>{order.serviceDetails.notes}</Text>
+                      <Text style={[styles.customerLabel, { color: colors.textSecondary }]}>Preferred Time:</Text>
+                      <Text style={[styles.customerValue, { color: colors.text }]}>{order.serviceDetails.notes}</Text>
                     </View>
                   )}
                 </View>
                 
-                <View style={styles.servicePriceSection}>
-                  <Text style={styles.servicePriceLabel}>Service Cost</Text>
-                  <Text style={styles.servicePriceValue}>To be confirmed</Text>
+                <View style={[styles.servicePriceSection, { backgroundColor: colors.warning + '20' }]}>
+                  <Text style={[styles.servicePriceLabel, { color: colors.textSecondary }]}>Service Cost</Text>
+                  <Text style={[styles.servicePriceValue, { color: colors.textSecondary }]}>To be confirmed</Text>
                 </View>
               </View>
             </View>
           </View>
         ) : (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Items ({order.items.length})</Text>
-            <View style={styles.itemsCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Items ({order.items.length})</Text>
+            <View style={[styles.itemsCard, { backgroundColor: colors.card }]}>
               {order.items.map((item, index) => (
                 <View key={index} style={styles.itemRow}>
                   <View style={styles.itemLeft}>
                     <Image source={item.image} style={styles.itemIconImage} />
                     <View style={styles.itemInfo}>
-                      <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={styles.itemRate}>₹{item.rate}/kg</Text>
+                      <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                      <Text style={[styles.itemRate, { color: colors.textSecondary }]}>₹{item.rate}/kg</Text>
                     </View>
                   </View>
                   <View style={styles.itemRight}>
-                    <Text style={styles.itemQuantity}>{item.quantity}kg</Text>
-                    <Text style={styles.itemTotal}>₹{item.rate * item.quantity}</Text>
+                    <Text style={[styles.itemQuantity, { color: colors.textSecondary }]}>{item.quantity}kg</Text>
+                    <Text style={[styles.itemTotal, { color: colors.text }]}>₹{item.rate * item.quantity}</Text>
                   </View>
                 </View>
               ))}
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Estimated Value</Text>
+              <View style={[styles.totalRow, { borderTopColor: colors.border }]}>
+                <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Estimated Value</Text>
                 <View style={styles.totalAmount}>
-                  <IndianRupee size={18} color="#6b7280" />
-                  <Text style={styles.totalValue}>₹{order.totalAmount}</Text>
+                  <IndianRupee size={18} color={colors.textSecondary} />
+                  <Text style={[styles.totalValue, { color: colors.text }]}>₹{order.totalAmount}</Text>
                 </View>
               </View>
               {order.referralBonus && order.referralBonus > 0 && (
                 <>
-                  <View style={styles.referralRow}>
-                    <Text style={styles.referralLabel}>🎁 Referral Bonus</Text>
+                  <View style={[styles.referralRow, { backgroundColor: colors.primaryLight + '30' }]}>
+                    <Text style={[styles.referralLabel, { color: colors.primary }]}>🎁 Referral Bonus</Text>
                     <View style={styles.referralAmount}>
-                      <Text style={styles.referralValue}>+₹{order.referralBonus}</Text>
+                      <Text style={[styles.referralValue, { color: colors.primary }]}>+₹{order.referralBonus}</Text>
                     </View>
                   </View>
-                  <View style={styles.divider} />
-                  <View style={styles.finalRow}>
-                    <Text style={styles.finalLabel}>Total Payout</Text>
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                  <View style={[styles.finalRow, { backgroundColor: colors.primaryLight + '30' }]}>
+                    <Text style={[styles.finalLabel, { color: colors.text }]}>Total Payout</Text>
                     <View style={styles.finalAmount}>
-                      <IndianRupee size={20} color="#16a34a" strokeWidth={2.5} />
-                      <Text style={styles.finalValue}>₹{order.finalAmount || order.totalAmount}</Text>
+                      <IndianRupee size={20} color={colors.primary} strokeWidth={2.5} />
+                      <Text style={[styles.finalValue, { color: colors.primary }]}>₹{order.finalAmount || order.totalAmount}</Text>
                     </View>
                   </View>
                 </>
@@ -182,20 +188,20 @@ export default function OrderDetailScreen() {
 
         {/* Pickup Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pickup Details</Text>
-          <View style={styles.detailsCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Pickup Details</Text>
+          <View style={[styles.detailsCard, { backgroundColor: colors.card }]}>
             <View style={styles.detailRow}>
-              <Calendar size={20} color="#6b7280" />
+              <Calendar size={20} color={colors.textSecondary} />
               <View style={styles.detailInfo}>
-                <Text style={styles.detailLabel}>Scheduled Date</Text>
-                <Text style={styles.detailValue}>{order.scheduledDate}</Text>
+                <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Scheduled Date</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>{order.scheduledDate}</Text>
               </View>
             </View>
             <View style={styles.detailRow}>
-              <Clock size={20} color="#6b7280" />
+              <Clock size={20} color={colors.textSecondary} />
               <View style={styles.detailInfo}>
-                <Text style={styles.detailLabel}>Time Slot</Text>
-                <Text style={styles.detailValue}>{order.scheduledTime}</Text>
+                <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Time Slot</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>{order.scheduledTime}</Text>
               </View>
             </View>
           </View>
@@ -203,33 +209,33 @@ export default function OrderDetailScreen() {
 
         {/* Address Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pickup Address</Text>
-          <View style={styles.addressCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Pickup Address</Text>
+          <View style={[styles.addressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.addressHeader}>
-              <MapPin size={20} color="#111827" />
-              <Text style={styles.addressTitle}>{order.address.title}</Text>
+              <MapPin size={20} color={colors.text} />
+              <Text style={[styles.addressTitle, { color: colors.text }]}>{order.address.title}</Text>
             </View>
-            <Text style={styles.addressText}>{order.address.fullAddress}</Text>
+            <Text style={[styles.addressText, { color: colors.textSecondary }]}>{order.address.fullAddress}</Text>
           </View>
         </View>
 
         {/* Contact Information */}
         {order.contact && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Contact Information</Text>
-            <View style={styles.detailsCard}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Contact Information</Text>
+            <View style={[styles.detailsCard, { backgroundColor: colors.card }]}>
               <View style={styles.detailRow}>
-                <Phone size={20} color="#6b7280" />
+                <Phone size={20} color={colors.textSecondary} />
                 <View style={styles.detailInfo}>
-                  <Text style={styles.detailLabel}>Name</Text>
-                  <Text style={styles.detailValue}>{order.contact.name}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Name</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{order.contact.name}</Text>
                 </View>
               </View>
               <View style={styles.detailRow}>
-                <Phone size={20} color="#6b7280" />
+                <Phone size={20} color={colors.textSecondary} />
                 <View style={styles.detailInfo}>
-                  <Text style={styles.detailLabel}>Mobile</Text>
-                  <Text style={styles.detailValue}>{order.contact.mobile}</Text>
+                  <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Mobile</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{order.contact.mobile}</Text>
                 </View>
               </View>
             </View>
@@ -239,29 +245,29 @@ export default function OrderDetailScreen() {
         {/* Notes */}
         {order.notes && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Special Instructions</Text>
-            <View style={styles.notesCard}>
-              <Text style={styles.notesText}>{order.notes}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Special Instructions</Text>
+            <View style={[styles.notesCard, { backgroundColor: colors.warning + '15', borderColor: colors.warning }]}>
+              <Text style={[styles.notesText, { color: colors.text }]}>{order.notes}</Text>
             </View>
           </View>
         )}
 
         {/* Order Timeline */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Timeline</Text>
-          <View style={styles.timelineCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Timeline</Text>
+          <View style={[styles.timelineCard, { backgroundColor: colors.card }]}>
             <View style={styles.timelineItem}>
-              <View style={[styles.timelineDot, { backgroundColor: '#16a34a' }]} />
+              <View style={[styles.timelineDot, { backgroundColor: colors.primary }]} />
               <View style={styles.timelineContent}>
-                <Text style={styles.timelineTitle}>Order Placed</Text>
-                <Text style={styles.timelineDate}>{new Date(order.createdAt).toLocaleDateString()}</Text>
+                <Text style={[styles.timelineTitle, { color: colors.text }]}>Order Placed</Text>
+                <Text style={[styles.timelineDate, { color: colors.textSecondary }]}>{new Date(order.createdAt).toLocaleDateString()}</Text>
               </View>
             </View>
             <View style={styles.timelineItem}>
               <View style={[styles.timelineDot, { backgroundColor: getStatusColor(order.status) }]} />
               <View style={styles.timelineContent}>
-                <Text style={styles.timelineTitle}>{getStatusText(order.status)}</Text>
-                <Text style={styles.timelineDate}>{new Date(order.updatedAt).toLocaleDateString()}</Text>
+                <Text style={[styles.timelineTitle, { color: colors.text }]}>{getStatusText(order.status)}</Text>
+                <Text style={[styles.timelineDate, { color: colors.textSecondary }]}>{new Date(order.updatedAt).toLocaleDateString()}</Text>
               </View>
             </View>
           </View>
@@ -270,9 +276,12 @@ export default function OrderDetailScreen() {
         {/* Action Buttons */}
         {canCancelOrder && (
           <View style={styles.actionsSection}>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelOrder}>
-              <X size={20} color="#dc2626" />
-              <Text style={styles.cancelButtonText}>Cancel Order</Text>
+            <TouchableOpacity 
+              style={[styles.cancelButton, { backgroundColor: colors.card, borderColor: colors.error }]} 
+              onPress={handleCancelOrder}
+            >
+              <X size={20} color={colors.error} />
+              <Text style={[styles.cancelButtonText, { color: colors.error }]}>Cancel Order</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -612,9 +621,7 @@ const styles = StyleSheet.create({
   },
   serviceTypeBadge: {
     fontSize: 12,
-    color: '#16a34a',
     fontFamily: 'Inter-Medium',
-    backgroundColor: '#dcfce7',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -622,7 +629,6 @@ const styles = StyleSheet.create({
   },
   serviceDivider: {
     height: 1,
-    backgroundColor: '#e5e7eb',
     marginVertical: 16,
   },
   customerDetailsSection: {
@@ -631,7 +637,6 @@ const styles = StyleSheet.create({
   customerSectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
     fontFamily: 'Inter-SemiBold',
     marginBottom: 12,
     textTransform: 'uppercase',
@@ -643,32 +648,27 @@ const styles = StyleSheet.create({
   },
   customerLabel: {
     fontSize: 15,
-    color: '#6b7280',
     fontFamily: 'Inter-Medium',
     width: 120,
   },
   customerValue: {
     fontSize: 15,
-    color: '#111827',
     fontFamily: 'Inter-Regular',
     flex: 1,
   },
   servicePriceSection: {
-    backgroundColor: '#fef3c7',
     padding: 16,
     borderRadius: 12,
     marginTop: 12,
   },
   servicePriceLabel: {
     fontSize: 13,
-    color: '#92400e',
     fontFamily: 'Inter-Medium',
     marginBottom: 4,
   },
   servicePriceValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#92400e',
     fontFamily: 'Inter-SemiBold',
   },
   referralRow: {
@@ -678,13 +678,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginTop: 8,
-    backgroundColor: '#f0fdf4',
     borderRadius: 8,
   },
   referralLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
   },
   referralAmount: {
@@ -694,12 +692,10 @@ const styles = StyleSheet.create({
   referralValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
   },
   divider: {
     height: 1,
-    backgroundColor: '#16a34a',
     marginVertical: 12,
     marginHorizontal: 16,
     opacity: 0.2,
@@ -710,14 +706,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#dcfce7',
     borderRadius: 8,
     marginTop: 8,
   },
   finalLabel: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#111827',
     fontFamily: 'Inter-SemiBold',
   },
   finalAmount: {
@@ -728,19 +722,15 @@ const styles = StyleSheet.create({
   finalValue: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
   },
   notesCard: {
-    backgroundColor: '#fef9f0',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#fbbf24',
   },
   notesText: {
     fontSize: 14,
-    color: '#374151',
     fontFamily: 'Inter-Regular',
     lineHeight: 22,
   },

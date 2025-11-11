@@ -7,12 +7,15 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  Dimensions,
   Image,
   Modal,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { wp, hp, fs, spacing, responsiveValue } from '../../utils/responsive';
 import {
   Plus,
   Minus,
@@ -37,10 +40,9 @@ import { scrapData, getAverageRate, type ScrapItem } from '../../data/scrapData'
 import { addOrder, type OrderItem } from '../../data/orderData';
 import { useReferral } from '../../contexts/ReferralContext';
 import { useLocation } from '../../contexts/LocationContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width, height } = Dimensions.get('window');
 
 // Extended type for selected items
 type SelectedScrapItem = ScrapItem & {
@@ -66,9 +68,12 @@ const stepTitles = [
   'Order Summary'
 ];
 
+const GUIDELINES_SHOWN_KEY = '@scrapiz_guidelines_shown';
+
 export default function SellScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { colors, isDark } = useTheme();
   const { walletBalance, setWalletBalance, applyReferralDiscount } = useReferral();
   const { savedLocations, currentLocation } = useLocation();
   
@@ -78,7 +83,7 @@ export default function SellScreen() {
   const [selectedTime, setSelectedTime] = useState('');
   const [useReferralBalance, setUseReferralBalance] = useState(false);
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<string | null>(null);
-  const [showGuidelinesModal, setShowGuidelinesModal] = useState(true);
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const [addressForm, setAddressForm] = useState({
     title: '',
     addressLine: '',
@@ -95,6 +100,23 @@ export default function SellScreen() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [hasProcessedParams, setHasProcessedParams] = useState(false);
   const [notes, setNotes] = useState('');
+
+  // Check if guidelines have been shown before
+  useEffect(() => {
+    const checkGuidelinesShown = async () => {
+      try {
+        const shown = await AsyncStorage.getItem(GUIDELINES_SHOWN_KEY);
+        if (!shown) {
+          setShowGuidelinesModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking guidelines shown state:', error);
+        // Show modal on error to be safe
+        setShowGuidelinesModal(true);
+      }
+    };
+    checkGuidelinesShown();
+  }, []);
 
   // Handle pre-selected item from search
   useEffect(() => {
@@ -140,6 +162,15 @@ export default function SellScreen() {
       setSelectedSavedAddressId(savedLocations[0].id);
     }
   }, [useNewAddress, savedLocations, selectedSavedAddressId]);
+
+  const handleCloseGuidelines = async () => {
+    try {
+      await AsyncStorage.setItem(GUIDELINES_SHOWN_KEY, 'true');
+    } catch (error) {
+      console.error('Failed to save guidelines shown state:', error);
+    }
+    setShowGuidelinesModal(false);
+  };
 
   const pickImage = async () => {
     // Ask for permission
@@ -418,11 +449,12 @@ export default function SellScreen() {
         <React.Fragment key={step}>
           <View style={[
             styles.stepCircle,
+            { backgroundColor: colors.card, borderColor: colors.border },
             currentStep >= step && styles.stepCircleActive
           ]}>
             {currentStep >= step ? (
               <LinearGradient
-                colors={['#16a34a', '#15803d']}
+                colors={isDark ? ['#22c55e', '#16a34a'] : ['#16a34a', '#15803d']}
                 style={styles.stepGradient}
               >
                 <Text style={styles.stepNumberActive}>
@@ -430,7 +462,7 @@ export default function SellScreen() {
                 </Text>
               </LinearGradient>
             ) : (
-              <Text style={styles.stepNumber}>
+              <Text style={[styles.stepNumber, { color: colors.textSecondary }]}>
                 {step}
               </Text>
             )}
@@ -438,7 +470,8 @@ export default function SellScreen() {
           {step < 4 && (
             <View style={[
               styles.stepLine,
-              currentStep > step && styles.stepLineActive
+              { backgroundColor: colors.border },
+              currentStep > step && [styles.stepLineActive, { backgroundColor: colors.primary }]
             ]} />
           )}
         </React.Fragment>
@@ -448,8 +481,8 @@ export default function SellScreen() {
 
   const renderStep1 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Select Items to Sell</Text>
-      <Text style={styles.stepSubtitle}>Choose the scrap materials you want to sell</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Select Items to Sell</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Choose the scrap materials you want to sell</Text>
       
       <ScrollView 
         style={styles.categoriesContainer} 
@@ -474,21 +507,21 @@ export default function SellScreen() {
               {category.items.map((item, index) => (
                 <TouchableOpacity
                   key={`${category.id}-${index}`}
-                  style={styles.itemCard}
+                  style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                   onPress={() => addItem(item, category.id, category.color, category.icon)}
                 >
                   <View style={styles.itemLeft}>
                     <Image source={item.image} style={styles.itemIconImage} />
                     <View style={styles.itemInfo}>
-                      <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={styles.itemRate}>
+                      <Text style={[styles.itemName, { color: colors.text }]}>{item.name}</Text>
+                      <Text style={[styles.itemRate, { color: colors.primary }]}>
                         {item.rate}/kg
                       </Text>
-                      <Text style={styles.itemDescription}>{item.description}</Text>
+                      <Text style={[styles.itemDescription, { color: colors.textSecondary }]}>{item.description}</Text>
                     </View>
                   </View>
                   <View style={styles.addButton}>
-                    <Plus size={16} color="white" />
+                    <Plus size={fs(16)} color="white" />
                   </View>
                 </TouchableOpacity>
               ))}
@@ -499,37 +532,37 @@ export default function SellScreen() {
 
       {selectedItems.length > 0 && (
         <View style={styles.selectedItems}>
-          <Text style={styles.selectedItemsTitle}>Selected Items ({selectedItems.length})</Text>
+          <Text style={[styles.selectedItemsTitle, { color: colors.text }]}>Selected Items ({selectedItems.length})</Text>
           {selectedItems.map((item) => (
-            <View key={item.id} style={styles.selectedItemCard}>
+            <View key={item.id} style={[styles.selectedItemCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.selectedItemLeft}>
                 <Image source={item.image} style={styles.selectedItemIconImage} />
                 <View>
-                  <Text style={styles.selectedItemName}>{item.name}</Text>
-                  <Text style={styles.selectedItemRate}>
+                  <Text style={[styles.selectedItemName, { color: colors.text }]}>{item.name}</Text>
+                  <Text style={[styles.selectedItemRate, { color: colors.primary }]}>
                     {item.rate}/kg
                   </Text>
                 </View>
               </View>
               <View style={styles.quantityControls}>
                 <TouchableOpacity
-                  style={styles.quantityButton}
+                  style={[styles.quantityButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => updateQuantity(item.id, -1)}
                 >
-                  <Minus size={16} color="#6b7280" />
+                  <Minus size={fs(16)} color={colors.textSecondary} />
                 </TouchableOpacity>
-                <Text style={styles.quantityText}>{item.quantity}kg</Text>
+                <Text style={[styles.quantityText, { color: colors.text }]}>{item.quantity}kg</Text>
                 <TouchableOpacity
-                  style={styles.quantityButton}
+                  style={[styles.quantityButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => updateQuantity(item.id, 1)}
                 >
-                  <Plus size={16} color="#6b7280" />
+                  <Plus size={fs(16)} color={colors.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeItem(item.id)}
                 >
-                  <Trash2 size={16} color="#dc2626" />
+                  <Trash2 size={fs(16)} color="#dc2626" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -545,11 +578,11 @@ export default function SellScreen() {
 
   const renderStep2 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Schedule Pickup</Text>
-      <Text style={styles.stepSubtitle}>Choose your preferred date and time</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Schedule Pickup</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Choose your preferred date and time</Text>
       
       <View style={styles.dateSection}>
-        <Text style={styles.sectionLabel}>Select Date</Text>
+        <Text style={[styles.sectionLabel, { color: colors.text }]}>Select Date</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.datesScroll}>
           {Array.from({ length: 7 }, (_, i) => {
             const date = new Date();
@@ -564,13 +597,15 @@ export default function SellScreen() {
                 key={i}
                 style={[
                   styles.dateCard,
-                  selectedDate === dateStr && styles.dateCardSelected
+                  { backgroundColor: colors.surface, borderColor: colors.border },
+                  selectedDate === dateStr && [styles.dateCardSelected, { backgroundColor: colors.primary, borderColor: colors.primary }]
                 ]}
                 onPress={() => setSelectedDate(dateStr)}
               >
                 <Text style={[
                   styles.dateText,
-                  selectedDate === dateStr && styles.dateTextSelected
+                  { color: colors.text },
+                  selectedDate === dateStr && [styles.dateTextSelected, { color: 'white' }]
                 ]}>
                   {dateStr}
                 </Text>
@@ -581,19 +616,21 @@ export default function SellScreen() {
       </View>
 
       <View style={styles.timeSection}>
-        <Text style={styles.sectionLabel}>Select Time Slot</Text>
+        <Text style={[styles.sectionLabel, { color: colors.text }]}>Select Time Slot</Text>
         {timeSlots.map((slot) => (
           <TouchableOpacity
             key={slot}
             style={[
               styles.timeSlot,
-              selectedTime === slot && styles.timeSlotSelected
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              selectedTime === slot && [styles.timeSlotSelected, { backgroundColor: colors.primary, borderColor: colors.primary }]
             ]}
             onPress={() => setSelectedTime(slot)}
           >
             <Text style={[
               styles.timeSlotText,
-              selectedTime === slot && styles.timeSlotTextSelected
+              { color: colors.text },
+              selectedTime === slot && [styles.timeSlotTextSelected, { color: 'white' }]
             ]}>
               {slot}
             </Text>
@@ -609,22 +646,23 @@ export default function SellScreen() {
 
   const renderStep3 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Contact & Address</Text>
-      <Text style={styles.stepSubtitle}>Provide your contact details and pickup address</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Contact & Address</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Provide your contact details and pickup address</Text>
       
       {/* Contact Information */}
-      <View style={styles.contactCard}>
+      <View style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.contactHeader}>
-          <User size={20} color="#111827" />
-          <Text style={styles.contactHeaderTitle}>Contact Information</Text>
+          <User size={fs(20)} color={colors.primary} />
+          <Text style={[styles.contactHeaderTitle, { color: colors.text }]}>Contact Information</Text>
         </View>
         
         <View style={styles.contactForm}>
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Full Name <Text style={styles.required}>*</Text></Text>
+            <Text style={[styles.formLabel, { color: colors.text }]}>Full Name <Text style={styles.required}>*</Text></Text>
             <TextInput
-              style={[styles.formInput, errors.name && styles.formInputError]}
+              style={[styles.formInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, errors.name && styles.formInputError]}
               placeholder="Enter your full name"
+              placeholderTextColor={colors.textTertiary}
               value={contactForm.name}
               onChangeText={(text) => {
                 setContactForm(prev => ({ ...prev, name: text }));
@@ -635,12 +673,13 @@ export default function SellScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.formLabel}>Mobile Number <Text style={styles.required}>*</Text></Text>
-            <View style={styles.mobileInputContainer}>
-              <Phone size={16} color="#6b7280" style={styles.mobileIcon} />
+            <Text style={[styles.formLabel, { color: colors.text }]}>Mobile Number <Text style={styles.required}>*</Text></Text>
+            <View style={[styles.mobileInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Phone size={fs(16)} color={colors.textSecondary} style={styles.mobileIcon} />
               <TextInput
-                style={[styles.mobileInput, errors.mobile && styles.formInputError]}
+                style={[styles.mobileInput, { color: colors.text }, errors.mobile && styles.formInputError]}
                 placeholder="+91 98765 43210"
+                placeholderTextColor={colors.textTertiary}
                 value={contactForm.mobile}
                 onChangeText={(text) => {
                   setContactForm(prev => ({ ...prev, mobile: text }));
@@ -655,15 +694,15 @@ export default function SellScreen() {
         </View>
       </View>
       
-      <View style={styles.addressCard}>
+      <View style={[styles.addressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.addressHeader}>
-          <MapPin size={20} color="#111827" />
-          <Text style={styles.addressHeaderTitle}>Select or Add Address</Text>
+          <MapPin size={fs(20)} color={colors.primary} />
+          <Text style={[styles.addressHeaderTitle, { color: colors.text }]}>Select or Add Address</Text>
         </View>
 
-        <View style={styles.addressTabs}>
+        <View style={[styles.addressTabs, { backgroundColor: colors.surface }]}>
           <TouchableOpacity
-            style={[styles.addressTab, useNewAddress && styles.addressTabActive]}
+            style={[styles.addressTab, useNewAddress && [styles.addressTabActive, { backgroundColor: colors.primary }]]}
             onPress={() => {
               setUseNewAddress(true);
               // Clear saved address errors when switching to new address
@@ -672,12 +711,12 @@ export default function SellScreen() {
               }
             }}
           >
-            <Text style={[styles.addressTabText, useNewAddress && styles.addressTabTextActive]}>
+            <Text style={[styles.addressTabText, { color: useNewAddress ? 'white' : colors.textSecondary }]}>
               Add New Address
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.addressTab, !useNewAddress && styles.addressTabActive]}
+            style={[styles.addressTab, !useNewAddress && [styles.addressTabActive, { backgroundColor: colors.primary }]]}
             onPress={() => {
               setUseNewAddress(false);
               // Clear new address form errors when switching to saved address
@@ -689,7 +728,7 @@ export default function SellScreen() {
               }
             }}
           >
-            <Text style={[styles.addressTabText, !useNewAddress && styles.addressTabTextActive]}>
+            <Text style={[styles.addressTabText, { color: !useNewAddress ? 'white' : colors.textSecondary }]}>
               Use Saved Address
             </Text>
           </TouchableOpacity>
@@ -698,10 +737,11 @@ export default function SellScreen() {
         {useNewAddress ? (
           <View style={styles.addressForm}>
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Address Title <Text style={styles.required}>*</Text></Text>
+              <Text style={[styles.formLabel, { color: colors.text }]}>Address Title <Text style={styles.required}>*</Text></Text>
               <TextInput
-                style={[styles.formInput, errors.title && styles.formInputError]}
+                style={[styles.formInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, errors.title && styles.formInputError]}
                 placeholder="e.g., Home, Office"
+                placeholderTextColor={colors.textTertiary}
                 value={addressForm.title}
                 onChangeText={(text) => {
                   setAddressForm(prev => ({ ...prev, title: text }));
@@ -712,10 +752,11 @@ export default function SellScreen() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Address Line <Text style={styles.required}>*</Text></Text>
+              <Text style={[styles.formLabel, { color: colors.text }]}>Address Line <Text style={styles.required}>*</Text></Text>
               <TextInput
-                style={[styles.formInput, errors.addressLine && styles.formInputError]}
+                style={[styles.formInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, errors.addressLine && styles.formInputError]}
                 placeholder="House/Flat no, Street name"
+                placeholderTextColor={colors.textTertiary}
                 value={addressForm.addressLine}
                 onChangeText={(text) => {
                   setAddressForm(prev => ({ ...prev, addressLine: text }));
@@ -726,10 +767,11 @@ export default function SellScreen() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.formLabel}>Area/Landmark</Text>
+              <Text style={[styles.formLabel, { color: colors.text }]}>Area/Landmark</Text>
               <TextInput
-                style={styles.formInput}
+                style={[styles.formInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
                 placeholder="Nearby landmark or area"
+                placeholderTextColor={colors.textTertiary}
                 value={addressForm.landmark}
                 onChangeText={(text) => setAddressForm(prev => ({ ...prev, landmark: text }))}
               />
@@ -737,10 +779,11 @@ export default function SellScreen() {
 
             <View style={styles.formRow}>
               <View style={[styles.formGroup, { flex: 1, marginRight: 12 }]}>
-                <Text style={styles.formLabel}>City <Text style={styles.required}>*</Text></Text>
+                <Text style={[styles.formLabel, { color: colors.text }]}>City <Text style={styles.required}>*</Text></Text>
                 <TextInput
-                  style={[styles.formInput, errors.city && styles.formInputError]}
+                  style={[styles.formInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, errors.city && styles.formInputError]}
                   placeholder="City"
+                  placeholderTextColor={colors.textTertiary}
                   value={addressForm.city}
                   onChangeText={(text) => {
                     setAddressForm(prev => ({ ...prev, city: text }));
@@ -750,10 +793,11 @@ export default function SellScreen() {
                 {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
               </View>
               <View style={[styles.formGroup, { flex: 1, marginLeft: 12 }]}>
-                <Text style={styles.formLabel}>PIN Code <Text style={styles.required}>*</Text></Text>
+                <Text style={[styles.formLabel, { color: colors.text }]}>PIN Code <Text style={styles.required}>*</Text></Text>
                 <TextInput
-                  style={[styles.formInput, errors.pinCode && styles.formInputError]}
+                  style={[styles.formInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }, errors.pinCode && styles.formInputError]}
                   placeholder="123456"
+                  placeholderTextColor={colors.textTertiary}
                   keyboardType="numeric"
                   maxLength={6}
                   value={addressForm.pinCode}
@@ -774,30 +818,31 @@ export default function SellScreen() {
                   key={location.id}
                   style={[
                     styles.savedAddressCard,
-                    selectedSavedAddressId === location.id && styles.savedAddressCardActive
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    selectedSavedAddressId === location.id && [styles.savedAddressCardActive, { borderColor: colors.primary, backgroundColor: colors.primaryLight + '20' }]
                   ]}
                   onPress={() => setSelectedSavedAddressId(location.id)}
                 >
                   <View style={styles.savedAddressInfo}>
-                    <Text style={styles.savedAddressTitle}>
+                    <Text style={[styles.savedAddressTitle, { color: colors.text }]}>
                       {location.label || location.type.charAt(0).toUpperCase() + location.type.slice(1)}
                     </Text>
-                    <Text style={styles.savedAddressText}>
+                    <Text style={[styles.savedAddressText, { color: colors.textSecondary }]}>
                       {location.address}, {location.city} - {location.pincode}
                     </Text>
                   </View>
-                  <View style={styles.savedAddressRadio}>
+                  <View style={[styles.savedAddressRadio, { borderColor: colors.border }]}>
                     {selectedSavedAddressId === location.id && (
-                      <View style={styles.radioSelected} />
+                      <View style={[styles.radioSelected, { backgroundColor: colors.primary }]} />
                     )}
                   </View>
                 </TouchableOpacity>
               ))
             ) : (
               <View style={styles.noSavedAddress}>
-                <MapPin size={48} color="#9ca3af" />
-                <Text style={styles.noSavedAddressText}>No saved addresses yet</Text>
-                <Text style={styles.noSavedAddressSubtext}>
+                <MapPin size={fs(48)} color={colors.textTertiary} />
+                <Text style={[styles.noSavedAddressText, { color: colors.textSecondary }]}>No saved addresses yet</Text>
+                <Text style={[styles.noSavedAddressSubtext, { color: colors.textTertiary }]}>
                   Add addresses from Location Selector or use "Add New Address"
                 </Text>
               </View>
@@ -810,21 +855,21 @@ export default function SellScreen() {
       </View>
 
       {/* Photo Upload Section */}
-      <View style={styles.photoCard}>
+      <View style={[styles.photoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.photoHeader}>
-          <Camera size={20} color="#111827" />
-          <Text style={styles.photoHeaderTitle}>Upload Photos (Optional)</Text>
+          <Camera size={fs(20)} color={colors.primary} />
+          <Text style={[styles.photoHeaderTitle, { color: colors.text }]}>Upload Photos (Optional)</Text>
         </View>
 
-        <TouchableOpacity style={styles.photoButton} onPress={pickImage}>
-          <Camera size={24} color="#6b7280" />
-          <Text style={styles.photoButtonText}>Add Photos</Text>
-          <Text style={styles.photoButtonSubtext}>Help us identify your scrap better</Text>
+        <TouchableOpacity style={[styles.photoButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={pickImage}>
+          <Camera size={fs(24)} color={colors.textSecondary} />
+          <Text style={[styles.photoButtonText, { color: colors.text }]}>Add Photos</Text>
+          <Text style={[styles.photoButtonSubtext, { color: colors.textSecondary }]}>Help us identify your scrap better</Text>
         </TouchableOpacity>
 
         {selectedImages.length > 0 && (
           <View style={styles.selectedImagesContainer}>
-            <Text style={styles.selectedImagesTitle}>Selected Photos ({selectedImages.length})</Text>
+            <Text style={[styles.selectedImagesTitle, { color: colors.text }]}>Selected Photos ({selectedImages.length})</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imagesScroll}>
               {selectedImages.map((uri, index) => (
                 <View key={index} style={styles.imageContainer}>
@@ -833,7 +878,7 @@ export default function SellScreen() {
                     style={styles.removeImageButton}
                     onPress={() => removeImage(uri)}
                   >
-                    <X size={16} color="white" />
+                    <X size={fs(16)} color="white" />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -846,64 +891,66 @@ export default function SellScreen() {
 
   const renderStep4 = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Order Summary</Text>
-      <Text style={styles.stepSubtitle}>Review your pickup details</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Order Summary</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Review your pickup details</Text>
       
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Items</Text>
+      <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.summaryTitle, { color: colors.text }]}>Items</Text>
         {selectedItems.map((item) => (
           <View key={item.id} style={styles.summaryItem}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 12 }}>
               <Image source={item.image} style={styles.summaryItemIconImage} />
-              <Text style={styles.summaryItemName} numberOfLines={2}>
+              <Text style={[styles.summaryItemName, { color: colors.text }]} numberOfLines={2}>
                 {item.name} ({item.quantity}kg)
               </Text>
             </View>
-            <Text style={styles.summaryItemAmount}>
+            <Text style={[styles.summaryItemAmount, { color: colors.primary }]}>
               ₹{getAverageRate(item) * item.quantity}
             </Text>
           </View>
         ))}
-        <View style={styles.summaryDivider} />
+        <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
         <View style={styles.summaryTotal}>
-          <Text style={styles.summaryTotalLabel}>Estimated Total</Text>
-          <Text style={styles.summaryTotalAmount}>₹{getTotalAmount()}</Text>
+          <Text style={[styles.summaryTotalLabel, { color: colors.text }]}>Estimated Total</Text>
+          <Text style={[styles.summaryTotalAmount, { color: colors.primary }]}>₹{getTotalAmount()}</Text>
         </View>
       </View>
 
       {/* Referral Wallet Section */}
       {walletBalance > 0 && (
-        <View style={styles.referralCard}>
+        <View style={[styles.referralCard, { backgroundColor: colors.card, borderColor: colors.primary }]}>
           <View style={styles.referralHeader}>
             <View style={styles.referralHeaderLeft}>
-              <View style={styles.referralIconContainer}>
-                <Wallet size={20} color="#16a34a" />
+              <View style={[styles.referralIconContainer, { backgroundColor: colors.primary }]}>
+                <Wallet size={fs(20)} color="white" />
               </View>
               <View>
-                <Text style={styles.referralTitle}>Referral Wallet</Text>
-                <Text style={styles.referralBalance}>₹{walletBalance} available</Text>
+                <Text style={[styles.referralTitle, { color: colors.text }]}>Referral Wallet</Text>
+                <Text style={[styles.referralBalance, { color: colors.primary }]}>₹{walletBalance} available</Text>
               </View>
             </View>
             <TouchableOpacity
               style={[
                 styles.referralToggle,
-                useReferralBalance && styles.referralToggleActive
+                { backgroundColor: colors.border },
+                useReferralBalance && [styles.referralToggleActive, { backgroundColor: colors.primary }]
               ]}
               onPress={() => setUseReferralBalance(!useReferralBalance)}
             >
               <View style={[
                 styles.referralToggleCircle,
-                useReferralBalance && styles.referralToggleCircleActive
+                { backgroundColor: colors.surface },
+                useReferralBalance && [styles.referralToggleCircleActive, { backgroundColor: 'white' }]
               ]} />
             </TouchableOpacity>
           </View>
           
           {useReferralBalance && (
-            <View style={styles.referralDiscountInfo}>
-              <Text style={styles.referralDiscountText}>
+            <View style={[styles.referralDiscountInfo, { backgroundColor: colors.primaryLight + '15' }]}>
+              <Text style={[styles.referralDiscountText, { color: colors.primary }]}>
                 💰 Referral Applied: +₹{getReferralDiscount()}
               </Text>
-              <Text style={styles.referralDiscountSubtext}>
+              <Text style={[styles.referralDiscountSubtext, { color: colors.textSecondary }]}>
                 Bonus amount will be added to your total payout
               </Text>
             </View>
@@ -913,65 +960,65 @@ export default function SellScreen() {
 
       {/* Final Amount Summary */}
       {useReferralBalance && getReferralDiscount() > 0 && (
-        <View style={styles.finalAmountCard}>
+        <View style={[styles.finalAmountCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.finalAmountRow}>
-            <Text style={styles.finalAmountLabel}>Estimated Value</Text>
-            <Text style={styles.finalAmountValue}>₹{getTotalAmount()}</Text>
+            <Text style={[styles.finalAmountLabel, { color: colors.textSecondary }]}>Estimated Value</Text>
+            <Text style={[styles.finalAmountValue, { color: colors.text }]}>₹{getTotalAmount()}</Text>
           </View>
           <View style={styles.finalAmountRow}>
-            <Text style={styles.finalAmountLabelBonus}>Referral Bonus</Text>
-            <Text style={styles.finalAmountValueBonus}>+₹{getReferralDiscount()}</Text>
+            <Text style={[styles.finalAmountLabelBonus, { color: colors.primary }]}>Referral Bonus</Text>
+            <Text style={[styles.finalAmountValueBonus, { color: colors.primary }]}>+₹{getReferralDiscount()}</Text>
           </View>
-          <View style={styles.finalAmountDivider} />
+          <View style={[styles.finalAmountDivider, { backgroundColor: colors.border }]} />
           <View style={styles.finalAmountRow}>
-            <Text style={styles.finalAmountLabelFinal}>Total Payout</Text>
-            <Text style={styles.finalAmountValueFinal}>₹{getFinalAmount()}</Text>
+            <Text style={[styles.finalAmountLabelFinal, { color: colors.text }]}>Total Payout</Text>
+            <Text style={[styles.finalAmountValueFinal, { color: colors.primary }]}>₹{getFinalAmount()}</Text>
           </View>
-          <Text style={styles.finalAmountNote}>
+          <Text style={[styles.finalAmountNote, { color: colors.textSecondary }]}>
             💸 You will receive this amount from us
           </Text>
         </View>
       )}
 
       {/* Improved Pickup Details Section */}
-      <View style={styles.pickupDetailsCard}>
-        <View style={styles.pickupDetailsHeader}>
-          <View style={styles.pickupDetailsIconWrapper}>
-            <Calendar size={20} color="#16a34a" />
+      <View style={[styles.pickupDetailsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.pickupDetailsHeader, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <View style={[styles.pickupDetailsIconWrapper, { backgroundColor: colors.primaryLight + '30' }]}>
+            <Calendar size={fs(20)} color={colors.primary} />
           </View>
-          <Text style={styles.pickupDetailsTitle}>Pickup Details</Text>
+          <Text style={[styles.pickupDetailsTitle, { color: colors.text }]}>Pickup Details</Text>
         </View>
         
         <View style={styles.pickupDetailsContent}>
           {/* Date & Time */}
           <View style={styles.pickupDetailRow}>
             <View style={styles.pickupDetailLabel}>
-              <Calendar size={16} color="#6b7280" />
-              <Text style={styles.pickupDetailLabelText}>Schedule</Text>
+              <Calendar size={fs(16)} color={colors.textSecondary} />
+              <Text style={[styles.pickupDetailLabelText, { color: colors.textSecondary }]}>Schedule</Text>
             </View>
             <View style={styles.pickupDetailValue}>
-              <Text style={styles.pickupDetailValueText}>{selectedDate}</Text>
-              <View style={styles.pickupTimeBadge}>
-                <Text style={styles.pickupTimeText}>{selectedTime}</Text>
+              <Text style={[styles.pickupDetailValueText, { color: colors.text }]}>{selectedDate}</Text>
+              <View style={[styles.pickupTimeBadge, { backgroundColor: colors.primaryLight + '30' }]}>
+                <Text style={[styles.pickupTimeText, { color: colors.primary }]}>{selectedTime}</Text>
               </View>
             </View>
           </View>
 
-          <View style={styles.pickupDetailDivider} />
+          <View style={[styles.pickupDetailDivider, { backgroundColor: colors.border }]} />
 
           {/* Address */}
           <View style={styles.pickupDetailRow}>
             <View style={styles.pickupDetailLabel}>
-              <MapPin size={16} color="#6b7280" />
-              <Text style={styles.pickupDetailLabelText}>Location</Text>
+              <MapPin size={fs(16)} color={colors.textSecondary} />
+              <Text style={[styles.pickupDetailLabelText, { color: colors.textSecondary }]}>Location</Text>
             </View>
             <View style={styles.pickupDetailValue}>
               {getAddressTitle() && (
-                <View style={styles.addressTitleBadge}>
-                  <Text style={styles.addressTitleText}>{getAddressTitle()}</Text>
+                <View style={[styles.addressTitleBadge, { backgroundColor: colors.primaryLight + '30' }]}>
+                  <Text style={[styles.addressTitleText, { color: colors.primary }]}>{getAddressTitle()}</Text>
                 </View>
               )}
-              <Text style={styles.pickupAddressText}>
+              <Text style={[styles.pickupAddressText, { color: colors.text }]}>
                 {getDisplayAddress()}
               </Text>
             </View>
@@ -979,28 +1026,28 @@ export default function SellScreen() {
         </View>
       </View>
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Contact Information</Text>
+      <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.summaryTitle, { color: colors.text }]}>Contact Information</Text>
         <View style={styles.summaryDetail}>
-          <User size={16} color="#6b7280" />
-          <Text style={styles.summaryDetailText}>{contactForm.name}</Text>
+          <User size={fs(16)} color={colors.textSecondary} />
+          <Text style={[styles.summaryDetailText, { color: colors.textSecondary }]}>{contactForm.name}</Text>
         </View>
         <View style={styles.summaryDetail}>
-          <Phone size={16} color="#6b7280" />
-          <Text style={styles.summaryDetailText}>{contactForm.mobile}</Text>
+          <Phone size={fs(16)} color={colors.textSecondary} />
+          <Text style={[styles.summaryDetailText, { color: colors.textSecondary }]}>{contactForm.mobile}</Text>
         </View>
       </View>
 
       {/* Notes Section */}
-      <View style={styles.summaryCard}>
+      <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={styles.notesTitleContainer}>
-          <FileText size={18} color="#16a34a" />
-          <Text style={styles.summaryTitle}>Notes (Optional)</Text>
+          <FileText size={fs(18)} color={colors.primary} />
+          <Text style={[styles.summaryTitle, { color: colors.text }]}>Notes (Optional)</Text>
         </View>
         <TextInput
-          style={styles.notesInput}
+          style={[styles.notesInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
           placeholder="Add any special instructions or details for pickup..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={colors.textTertiary}
           multiline
           numberOfLines={4}
           value={notes}
@@ -1017,12 +1064,12 @@ export default function SellScreen() {
         <View style={styles.pickupChargesHeader}>
           <View style={styles.pickupChargesTitleContainer}>
             <View style={styles.pickupChargesIconWrapper}>
-              <Scale size={22} color="#16a34a" />
+              <Scale size={fs(22)} color="#16a34a" />
             </View>
             <Text style={styles.pickupChargesTitle}>Pickup Charges</Text>
           </View>
           <TouchableOpacity style={styles.infoIconContainer}>
-            <AlertCircle size={18} color="#6b7280" />
+            <AlertCircle size={fs(18)} color="#6b7280" />
           </TouchableOpacity>
         </View>
 
@@ -1095,7 +1142,7 @@ export default function SellScreen() {
             <View style={styles.keepInMindIconContainer}>
               <Text style={styles.keepInMindEmoji}>🪵🍾</Text>
               <View style={styles.keepInMindCross}>
-                <X size={32} color="#dc2626" strokeWidth={3} />
+                <X size={fs(32)} color="#dc2626" strokeWidth={3} />
               </View>
             </View>
             <Text style={styles.keepInMindText}>We do not buy{'\n'}Wood & Glass</Text>
@@ -1148,10 +1195,15 @@ export default function SellScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Sell Scrap</Text>
-        <Text style={styles.stepTitle}>{stepTitles[currentStep - 1]}</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor="transparent"
+        translucent
+      />
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Sell Scrap</Text>
+        <Text style={[styles.stepTitle, { color: colors.textSecondary }]}>{stepTitles[currentStep - 1]}</Text>
         {renderStepIndicator()}
       </View>
 
@@ -1169,41 +1221,41 @@ export default function SellScreen() {
       </ScrollView>
 
       {selectedItems.length > 0 && (
-        <View style={styles.footer}>
+        <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
           <View style={styles.navigationButtons}>
             {currentStep > 1 && (
-              <TouchableOpacity style={styles.previousButton} onPress={handlePrevious}>
-                <ArrowLeft size={20} color="#6b7280" />
-                <Text style={styles.previousButtonText}>Previous</Text>
+              <TouchableOpacity style={[styles.previousButton, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={handlePrevious}>
+                <ArrowLeft size={20} color={colors.textSecondary} />
+                <Text style={[styles.previousButtonText, { color: colors.textSecondary }]}>Previous</Text>
               </TouchableOpacity>
             )}
             
             <View style={styles.totalSection}>
-              <Text style={styles.totalLabel}>Estimated Total</Text>
+              <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Estimated Total</Text>
               <View style={styles.totalAmount}>
-                <IndianRupee size={16} color="#16a34a" />
-                <Text style={styles.totalValue}>{getTotalAmount()}</Text>
+                <IndianRupee size={16} color={colors.primary} />
+                <Text style={[styles.totalValue, { color: colors.text }]}>{getTotalAmount()}</Text>
               </View>
             </View>
             
             <TouchableOpacity style={styles.nextButton} onPress={handleNext} activeOpacity={0.8}>
               <LinearGradient
-                colors={['#16a34a', '#15803d', '#166534']}
+                colors={isDark ? ['#22c55e', '#16a34a', '#15803d'] : ['#16a34a', '#15803d', '#166534']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={{ 
                   flexDirection: 'row', 
                   alignItems: 'center', 
-                  gap: 6,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
+                  gap: 4,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
                   borderRadius: 12,
                 }}
               >
                 <Text style={styles.nextButtonText}>
                   {currentStep === 4 ? 'Schedule' : 'Next'}
                 </Text>
-                <ArrowRight size={18} color="white" />
+                <ArrowRight size={16} color="white" />
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -1215,7 +1267,7 @@ export default function SellScreen() {
         animationType="fade"
         transparent={true}
         visible={showGuidelinesModal}
-        onRequestClose={() => setShowGuidelinesModal(false)}
+        onRequestClose={handleCloseGuidelines}
       >
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -1279,7 +1331,7 @@ export default function SellScreen() {
 
             <TouchableOpacity 
               style={styles.modalButton}
-              onPress={() => setShowGuidelinesModal(false)}
+              onPress={handleCloseGuidelines}
               activeOpacity={0.8}
             >
               <LinearGradient
@@ -1303,9 +1355,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: 'white',
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingTop: Platform.select({ ios: hp(6.2), android: hp(5) }),
+    paddingHorizontal: spacing(20),
+    paddingBottom: spacing(12),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -1313,28 +1365,28 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: fs(24),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 6,
+    marginBottom: spacing(6),
   },
   stepTitle: {
-    fontSize: 16,
+    fontSize: fs(16),
     color: '#6b7280',
     fontFamily: 'Inter-Medium',
-    marginBottom: 12,
+    marginBottom: spacing(12),
   },
   stepIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 12,
+    marginTop: spacing(8),
   },
   stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(3.5),
     backgroundColor: '#e5e7eb',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1344,14 +1396,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   stepGradient: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(3.5),
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepNumber: {
-    fontSize: 14,
+    fontSize: fs(12),
     fontWeight: '600',
     color: '#6b7280',
     fontFamily: 'Inter-SemiBold',
@@ -1360,10 +1412,10 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   stepLine: {
-    width: 40,
+    width: wp(8),
     height: 2,
     backgroundColor: '#e5e7eb',
-    marginHorizontal: 8,
+    marginHorizontal: spacing(6),
   },
   stepLineActive: {
     backgroundColor: '#16a34a',
@@ -1373,44 +1425,44 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingBottom: Platform.OS === 'android' ? 100 : 80, // Extra padding for Android
+    paddingBottom: Platform.OS === 'android' ? spacing(100) : spacing(80),
   },
   stepContent: {
-    padding: 20,
+    padding: spacing(16), // Reduced from 20
   },
   stepSubtitle: {
-    fontSize: 14,
+    fontSize: fs(13), // Reduced from 14
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    marginBottom: 24,
+    marginBottom: spacing(20), // Reduced from 24
   },
   categoriesContainer: {
     flexGrow: 0,
     flexShrink: 1,
-    marginBottom: 16,
+    marginBottom: spacing(12), // Reduced from 16
   },
   categorySection: {
-    marginBottom: 24,
+    marginBottom: spacing(20), // Reduced from 24
   },
   categoryHeaderSell: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: spacing(12),
+    padding: spacing(14), // Reduced from 16
+    marginBottom: spacing(10), // Reduced from 12
     alignItems: 'center',
   },
   categoryTitleSell: {
-    fontSize: 16,
+    fontSize: fs(15), // Reduced from 16
     fontWeight: '600',
     fontFamily: 'Inter-SemiBold',
     color: 'white',
   },
   categoryItems: {
-    gap: 8,
+    gap: spacing(7), // Reduced from 8
   },
   itemCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: spacing(12),
+    padding: spacing(13), // Reduced from 16
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1426,54 +1478,54 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   itemIcon: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: fs(22), // Reduced from 24
+    marginRight: spacing(10), // Reduced from 12
   },
   itemInfo: {
     flex: 1,
   },
   itemName: {
-    fontSize: 14,
+    fontSize: fs(13), // Reduced from 14
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 2,
+    marginBottom: spacing(2),
   },
   itemRate: {
-    fontSize: 13,
+    fontSize: fs(12), // Reduced from 13
     fontWeight: '500',
     fontFamily: 'Inter-Medium',
-    marginBottom: 2,
+    marginBottom: spacing(2),
     color: '#16a34a',
   },
   itemDescription: {
-    fontSize: 11,
+    fontSize: fs(10), // Reduced from 11
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
   addButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: wp(7.5), // Reduced from 8.5
+    height: wp(7.5), // Reduced from 8.5
+    borderRadius: wp(3.75), // Reduced from 4.25
     backgroundColor: '#16a34a',
     justifyContent: 'center',
     alignItems: 'center',
   },
   selectedItems: {
-    marginTop: 24,
+    marginTop: spacing(20), // Reduced from 24
   },
   selectedItemsTitle: {
-    fontSize: 18,
+    fontSize: fs(17), // Reduced from 18
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 16,
+    marginBottom: spacing(14), // Reduced from 16
   },
   selectedItemCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: spacing(12),
+    padding: spacing(14), // Reduced from 16
+    marginBottom: spacing(10), // Reduced from 12
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -1484,88 +1536,88 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   selectedItemIcon: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: fs(22), // Reduced from 24
+    marginRight: spacing(10), // Reduced from 12
   },
   selectedItemIconImage: {
-    width: 36,
-    height: 36,
-    marginRight: 12,
-    borderRadius: 6,
+    width: wp(8.5), // Reduced from 9.6
+    height: wp(8.5), // Reduced from 9.6
+    marginRight: spacing(10), // Reduced from 12
+    borderRadius: spacing(6),
   },
 
   itemIconImage: {
-    width: 44,
-    height: 44,
-    marginRight: 12,
-    borderRadius: 10,
+    width: wp(10), // Reduced from 11.7
+    height: wp(10), // Reduced from 11.7
+    marginRight: spacing(10), // Reduced from 12
+    borderRadius: spacing(10),
   },
 
   summaryItemIconImage: {
-    width: 28,
-    height: 28,
-    marginRight: 10,
-    borderRadius: 6,
+    width: wp(6.5), // Reduced from 7.5
+    height: wp(6.5), // Reduced from 7.5
+    marginRight: spacing(8), // Reduced from 10
+    borderRadius: spacing(6),
   },
   selectedItemName: {
-    fontSize: 14,
+    fontSize: fs(13), // Reduced from 14
     fontWeight: '500',
     color: '#111827',
     fontFamily: 'Inter-Medium',
   },
   selectedItemRate: {
-    fontSize: 12,
+    fontSize: fs(11), // Reduced from 12
     color: '#16a34a',
     fontFamily: 'Inter-Regular',
   },
   quantityControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing(10), // Reduced from 12
   },
   quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: wp(7.5), // Reduced from 8.5
+    height: wp(7.5), // Reduced from 8.5
+    borderRadius: wp(3.75), // Reduced from 4.25
     backgroundColor: '#f3f4f6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   quantityText: {
-    fontSize: 14,
+    fontSize: fs(13), // Reduced from 14
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    minWidth: 40,
+    minWidth: wp(9), // Reduced from 10.7
     textAlign: 'center',
   },
   removeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: wp(7.5), // Reduced from 8.5
+    height: wp(7.5), // Reduced from 8.5
+    borderRadius: wp(3.75), // Reduced from 4.25
     backgroundColor: '#fee2e2',
     justifyContent: 'center',
     alignItems: 'center',
   },
   dateSection: {
-    marginBottom: 24,
+    marginBottom: spacing(24),
   },
   sectionLabel: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 12,
+    marginBottom: spacing(12),
   },
   datesScroll: {
-    marginHorizontal: -8,
+    marginHorizontal: spacing(-8),
   },
   dateCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 8,
-    minWidth: 100,
+    borderRadius: spacing(12),
+    padding: spacing(16),
+    marginHorizontal: spacing(8),
+    minWidth: wp(26.7),
     alignItems: 'center',
     borderWidth: 2,
     borderColor: 'transparent',
@@ -1575,7 +1627,7 @@ const styles = StyleSheet.create({
     borderColor: '#16a34a',
   },
   dateText: {
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '500',
     color: '#6b7280',
     fontFamily: 'Inter-Medium',
@@ -1584,13 +1636,13 @@ const styles = StyleSheet.create({
     color: '#16a34a',
   },
   timeSection: {
-    marginBottom: 24,
+    marginBottom: spacing(24),
   },
   timeSlot: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: spacing(12),
+    padding: spacing(16),
+    marginBottom: spacing(12),
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -1599,7 +1651,7 @@ const styles = StyleSheet.create({
     borderColor: '#16a34a',
   },
   timeSlotText: {
-    fontSize: 16,
+    fontSize: fs(16),
     fontWeight: '500',
     color: '#6b7280',
     fontFamily: 'Inter-Medium',
@@ -1610,9 +1662,9 @@ const styles = StyleSheet.create({
   },
   addressCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
+    borderRadius: spacing(16),
+    padding: spacing(20),
+    marginBottom: spacing(24),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -1790,8 +1842,8 @@ const styles = StyleSheet.create({
   summaryCard: {
     backgroundColor: 'white',
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    padding: 16, // Reduced from 20
+    marginBottom: 14, // Reduced from 16
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -1799,20 +1851,20 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   summaryTitle: {
-    fontSize: 18,
+    fontSize: 16, // Reduced from 18
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
-    marginBottom: 16,
+    marginBottom: 14, // Reduced from 16
   },
   summaryItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10, // Reduced from 12
   },
   summaryItemName: {
-    fontSize: 14,
+    fontSize: 13, // Reduced from 14
     color: '#374151',
     fontFamily: 'Inter-Regular',
     flex: 1,
@@ -1820,7 +1872,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   summaryItemAmount: {
-    fontSize: 14,
+    fontSize: 13, // Reduced from 14
     fontWeight: '600',
     color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
@@ -1828,7 +1880,7 @@ const styles = StyleSheet.create({
   summaryDivider: {
     height: 1,
     backgroundColor: '#e5e7eb',
-    marginVertical: 16,
+    marginVertical: 14, // Reduced from 16
   },
   summaryTotal: {
     flexDirection: 'row',
@@ -1836,13 +1888,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryTotalLabel: {
-    fontSize: 16,
+    fontSize: 15, // Reduced from 16
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
   },
   summaryTotalAmount: {
-    fontSize: 20,
+    fontSize: 18, // Reduced from 20
     fontWeight: '600',
     color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
@@ -1850,39 +1902,39 @@ const styles = StyleSheet.create({
   summaryDetail: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 10, // Reduced from 12
   },
   summaryDetailText: {
-    fontSize: 14,
+    fontSize: 13, // Reduced from 14
     color: '#374151',
     fontFamily: 'Inter-Regular',
     marginLeft: 8,
     flex: 1,
-    lineHeight: 20,
+    lineHeight: 18, // Reduced from 20
   },
   summaryAddressContainer: {
     marginLeft: 8,
     flex: 1,
   },
   summaryAddressTitle: {
-    fontSize: 14,
+    fontSize: 13, // Reduced from 14
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
     marginBottom: 2,
   },
   summaryImagesScroll: {
-    marginTop: 12,
+    marginTop: 10, // Reduced from 12
   },
   summaryImage: {
-    width: 80,
-    height: 80,
+    width: 70, // Reduced from 80
+    height: 70, // Reduced from 80
     borderRadius: 8,
-    marginRight: 12,
+    marginRight: 10, // Reduced from 12
   },
   footer: {
     backgroundColor: 'white',
-    padding: 20,
+    padding: 16, // Reduced from 20
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
   },
@@ -1890,19 +1942,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
+    gap: 6, // Reduced from 8
   },
   previousButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f3f4f6',
     borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    gap: 6,
+    paddingHorizontal: 10, // Reduced from 12
+    paddingVertical: 10, // Reduced from 12
+    gap: 4, // Reduced from 6
   },
   previousButtonText: {
-    fontSize: 14,
+    fontSize: 13, // Reduced from 14
     fontWeight: '500',
     color: '#6b7280',
     fontFamily: 'Inter-Medium',
@@ -1911,10 +1963,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 16,
+    marginHorizontal: 12, // Reduced from 16
   },
   totalLabel: {
-    fontSize: 10,
+    fontSize: 9, // Reduced from 10
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
     marginBottom: 2,
@@ -1925,7 +1977,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalValue: {
-    fontSize: 16,
+    fontSize: 15, // Reduced from 16
     fontWeight: '700',
     color: '#16a34a',
     fontFamily: 'Inter-Bold',
@@ -1939,7 +1991,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   nextButtonText: {
-    fontSize: 14,
+    fontSize: 13, // Reduced from 14
     fontWeight: '600',
     color: 'white',
     fontFamily: 'Inter-SemiBold',
@@ -2233,7 +2285,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 400,
-    maxHeight: Platform.OS === 'android' ? height * 0.75 : height * 0.80,
+    maxHeight: Platform.OS === 'android' ? hp(60.9) : hp(65),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -2259,63 +2311,64 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   guidelinesScrollContent: {
-    paddingBottom: 12,
+    paddingBottom: spacing(12),
   },
   guidelinesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    gap: 10,
+    paddingHorizontal: spacing(16),
+    gap: spacing(12), // Using gap for consistent spacing
   },
   guidelineCard: {
-    width: '48%',
+    width: '47%', // Slightly reduced to account for gap
     backgroundColor: '#fef9f0',
     borderRadius: 14,
-    padding: 14,
+    padding: spacing(14),
     alignItems: 'center',
-    minHeight: 150,
+    minHeight: hp(19), // Responsive height
+    justifyContent: 'space-between', // Better vertical distribution
   },
   guidelineImageContainer: {
     width: '100%',
-    height: 90,
+    height: hp(11), // Responsive height
     backgroundColor: '#fef3c7',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: spacing(10),
     position: 'relative',
   },
   guidelineEmoji: {
-    fontSize: 44,
+    fontSize: fs(44),
   },
   crossMark: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -18,
-    marginLeft: -18,
+    marginTop: -fs(18), // Responsive margin
+    marginLeft: -fs(18),
   },
   weightBadge: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: spacing(8),
+    right: spacing(8),
     backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: spacing(10),
+    paddingVertical: spacing(5),
     borderRadius: 6,
-    fontSize: 15,
+    fontSize: fs(15),
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Inter-Bold',
   },
   guidelineText: {
-    fontSize: 13,
+    fontSize: fs(13),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
     textAlign: 'center',
-    lineHeight: 17,
+    lineHeight: fs(17),
   },
   modalButton: {
     margin: 16,
@@ -2337,7 +2390,6 @@ const styles = StyleSheet.create({
   },
   // Improved Pickup Details Styles
   pickupDetailsCard: {
-    backgroundColor: 'white',
     borderRadius: 16,
     marginBottom: 16,
     shadowColor: '#000',
@@ -2351,17 +2403,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#f0fdf4',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#dcfce7',
   },
   pickupDetailsIconWrapper: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2653,8 +2702,8 @@ const styles = StyleSheet.create({
   keepInMindCard: {
     backgroundColor: 'white',
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    padding: spacing(20),
+    marginBottom: spacing(16),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -2662,65 +2711,66 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   keepInMindTitle: {
-    fontSize: 18,
+    fontSize: fs(18),
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Inter-Bold',
-    marginBottom: 16,
+    marginBottom: spacing(16),
   },
   keepInMindGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: spacing(12), // Using gap for consistent spacing across platforms
   },
   keepInMindItem: {
-    width: '48%',
+    width: '47%', // Slightly reduced to account for gap
     backgroundColor: '#fef9f0',
     borderRadius: 12,
-    padding: 12,
+    padding: spacing(12),
     alignItems: 'center',
-    minHeight: 140,
-    marginBottom: 12,
+    minHeight: hp(18), // Using responsive height instead of fixed
+    justifyContent: 'space-between', // Better vertical distribution
   },
   keepInMindIconContainer: {
     width: '100%',
-    height: 80,
+    height: hp(10), // Responsive height
     backgroundColor: '#fef3c7',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: spacing(10),
     position: 'relative',
   },
   keepInMindEmoji: {
-    fontSize: 36,
+    fontSize: fs(36),
   },
   keepInMindCross: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginTop: -16,
-    marginLeft: -16,
+    marginTop: -fs(16), // Responsive margin
+    marginLeft: -fs(16),
   },
   keepInMindWeight: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: spacing(8),
+    right: spacing(8),
     backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: spacing(10),
+    paddingVertical: spacing(4),
     borderRadius: 6,
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Inter-Bold',
   },
   keepInMindText: {
-    fontSize: 12,
+    fontSize: fs(12),
     fontWeight: '600',
     color: '#111827',
     fontFamily: 'Inter-SemiBold',
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: fs(16),
   },
 });

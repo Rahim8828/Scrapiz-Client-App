@@ -9,12 +9,12 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Dimensions,
   SafeAreaView,
   Keyboard,
   TouchableWithoutFeedback,
   Image,
   Animated,
+  StatusBar,
 } from 'react-native';
 import {
   User,
@@ -30,12 +30,13 @@ import {
 import { Link, useRouter } from 'expo-router';
 import ScrapizLogo from '@/components/ScrapizLogo';
 import { useLocation } from '@/contexts/LocationContext';
-
-const { width, height } = Dimensions.get('window');
+import { useTheme } from '@/contexts/ThemeContext';
+import { wp, hp, fs, spacing } from '../../utils/responsive';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { locationSet, currentLocation } = useLocation();
+  const { colors, isDark } = useTheme();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -142,6 +143,9 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     if (!validateForm()) return;
     
+    // Dismiss keyboard before processing
+    Keyboard.dismiss();
+    
     setIsLoading(true);
     
     try {
@@ -162,6 +166,7 @@ export default function RegisterScreen() {
               {
                 text: 'Try Again',
                 style: 'cancel',
+                onPress: () => setIsLoading(false), // Fix loading state reset
               },
             ]
           );
@@ -231,19 +236,20 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <KeyboardAvoidingView 
-        style={styles.container} 
+        style={[styles.container, { backgroundColor: colors.background }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Back Button */}
         <View style={styles.backButtonContainer}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={[styles.backButton, { backgroundColor: colors.card }]}
             onPress={() => router.back()}
             disabled={isLoading}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
 
@@ -265,9 +271,9 @@ export default function RegisterScreen() {
                   }
                 ]}
               >
-                <ScrapizLogo width={220} />
-                <Text style={styles.welcomeText}>Create Account</Text>
-                <Text style={styles.subtitleText}>
+                <ScrapizLogo width={280} />
+                <Text style={[styles.welcomeText, { color: colors.text }]}>Create Account</Text>
+                <Text style={[styles.subtitleText, { color: colors.textSecondary }]}>
                   Join thousands of users earning money while helping the environment
                 </Text>
               </Animated.View>
@@ -513,14 +519,14 @@ const styles = StyleSheet.create({
   },
   backButtonContainer: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 10 : 16,
-    left: 20,
+    top: Platform.OS === 'ios' ? spacing(20) : spacing(24),
+    left: spacing(20),
     zIndex: 10,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: wp(10.7),
+    height: wp(10.7),
+    borderRadius: wp(5.35),
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
@@ -532,47 +538,47 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 80,
-    paddingBottom: 40,
+    paddingHorizontal: spacing(24),
+    paddingTop: hp(9.9),
+    paddingBottom: spacing(40),
   },
   header: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: spacing(28),
   },
   welcomeText: {
-    fontSize: 26,
+    fontSize: fs(26),
     fontWeight: '700',
     color: '#111827',
     fontFamily: 'Inter-Bold',
-    marginBottom: 8,
-    marginTop: 16,
+    marginBottom: spacing(8),
+    marginTop: spacing(16),
   },
   subtitleText: {
-    fontSize: 15,
+    fontSize: fs(15),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
     textAlign: 'center',
-    lineHeight: 22,
-    maxWidth: 300,
+    lineHeight: fs(22),
+    maxWidth: wp(80),
   },
   formContainer: {
     flex: 1,
-    marginBottom: 20,
+    marginBottom: spacing(20),
   },
   inputContainer: {
-    marginBottom: 18,
+    marginBottom: spacing(18),
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f9fafb',
-    borderRadius: 16,
+    borderRadius: spacing(16),
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    height: 58,
+    paddingHorizontal: spacing(16),
+    paddingVertical: spacing(4),
+    height: hp(7.1),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -580,17 +586,17 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: wp(10.1),
+    height: wp(10.1),
+    borderRadius: wp(5.05),
     backgroundColor: '#dcfce7',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: spacing(12),
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: fs(15),
     color: '#1f2937',
     fontWeight: '500',
   },
@@ -599,43 +605,43 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   eyeIcon: {
-    padding: 4,
+    padding: spacing(4),
   },
   errorText: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#ef4444',
     fontFamily: 'Inter-Medium',
-    marginTop: 6,
-    marginLeft: 4,
+    marginTop: spacing(6),
+    marginLeft: spacing(4),
   },
   referralHintText: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#22c55e',
     fontFamily: 'Inter-Medium',
-    marginTop: 6,
-    marginLeft: 4,
+    marginTop: spacing(6),
+    marginLeft: spacing(4),
   },
   registerButton: {
     backgroundColor: '#16a34a',
-    borderRadius: 16,
-    height: 56,
+    borderRadius: spacing(16),
+    height: hp(6.9),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: spacing(10),
     shadowColor: '#16a34a',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 12,
     elevation: 6,
-    marginTop: 12,
-    marginBottom: 20,
+    marginTop: spacing(12),
+    marginBottom: spacing(20),
   },
   registerButtonDisabled: {
     opacity: 0.6,
   },
   registerButtonText: {
-    fontSize: 17,
+    fontSize: fs(17),
     fontWeight: '800',
     color: '#ffffff',
     letterSpacing: 0.3,
@@ -643,7 +649,7 @@ const styles = StyleSheet.create({
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing(24),
   },
   dividerLine: {
     flex: 1,
@@ -651,22 +657,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#e5e7eb',
   },
   dividerText: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing(16),
   },
   googleButton: {
     backgroundColor: '#ffffff',
-    borderRadius: 16,
-    height: 56,
+    borderRadius: spacing(16),
+    height: hp(6.9),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
+    gap: spacing(12),
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
-    marginBottom: 16,
+    marginBottom: spacing(16),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -674,27 +680,27 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   googleIcon: {
-    width: 24,
-    height: 24,
+    width: fs(24),
+    height: fs(24),
     resizeMode: 'contain',
   },
   googleButtonDisabled: {
     opacity: 0.6,
   },
   googleButtonText: {
-    fontSize: 15,
+    fontSize: fs(15),
     fontWeight: '700',
     color: '#1f2937',
   },
   termsContainer: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing(8),
   },
   termsText: {
-    fontSize: 12,
+    fontSize: fs(12),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: fs(18),
   },
   termsLink: {
     color: '#16a34a',
@@ -706,12 +712,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#6b7280',
     fontFamily: 'Inter-Regular',
   },
   footerLink: {
-    fontSize: 14,
+    fontSize: fs(14),
     color: '#16a34a',
     fontFamily: 'Inter-SemiBold',
   },
