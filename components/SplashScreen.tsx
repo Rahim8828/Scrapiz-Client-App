@@ -75,8 +75,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
         />
         
         {/* Text below icon */}
-        <Text style={styles.text}>India's #1 Scrap Selling Platform</Text>
-        <Text style={styles.subtext}>Sell Scrap, Get Cash Instantly</Text>
+        <Text style={styles.subtext}>Sell Scrap, Get Cash</Text>
       </Animated.View>
 
       {/* Animated Progress Line at Bottom */}
