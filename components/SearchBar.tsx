@@ -14,6 +14,7 @@ import {
   ScrollView,
   Image,
   Keyboard,
+  Platform,
 } from 'react-native';
 import { Search, X, ChevronRight } from 'lucide-react-native';
 import { scrapData } from '../data/scrapData';
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing(16),
-    paddingTop: spacing(50),
+    paddingTop: Platform.OS === 'ios' ? spacing(50) : spacing(16),
     paddingBottom: spacing(12),
     borderBottomWidth: 1,
     gap: spacing(12),
@@ -505,12 +506,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 12,
     paddingHorizontal: spacing(12),
-    paddingVertical: spacing(10),
+    paddingVertical: Platform.OS === 'android' ? spacing(8) : spacing(10),
     gap: spacing(8),
   },
   searchInput: {
     flex: 1,
     fontSize: fs(15),
+    ...Platform.select({
+      android: {
+        paddingVertical: 0,
+      },
+    }),
   },
   cancelButton: {
     paddingHorizontal: spacing(8),
