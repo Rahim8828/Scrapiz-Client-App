@@ -106,11 +106,12 @@ export default function SellScreen() {
     const checkGuidelinesShown = async () => {
       try {
         const shown = await AsyncStorage.getItem(GUIDELINES_SHOWN_KEY);
+        
+        // Always show on first visit or if not shown before
         if (!shown) {
           setShowGuidelinesModal(true);
         }
       } catch (error) {
-        console.error('Error checking guidelines shown state:', error);
         // Show modal on error to be safe
         setShowGuidelinesModal(true);
       }
@@ -167,9 +168,19 @@ export default function SellScreen() {
     try {
       await AsyncStorage.setItem(GUIDELINES_SHOWN_KEY, 'true');
     } catch (error) {
-      console.error('Failed to save guidelines shown state:', error);
+      // Silent fail
     }
     setShowGuidelinesModal(false);
+  };
+
+  // For testing: Reset guidelines (remove in production)
+  const resetGuidelines = async () => {
+    try {
+      await AsyncStorage.removeItem(GUIDELINES_SHOWN_KEY);
+      setShowGuidelinesModal(true);
+    } catch (error) {
+      // Silent fail
+    }
   };
 
   const pickImage = async () => {
@@ -1202,7 +1213,21 @@ export default function SellScreen() {
         translucent
       />
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Sell Scrap</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Sell Scrap</Text>
+          {/* Testing button - Press to show guidelines */}
+          <TouchableOpacity 
+            onPress={resetGuidelines}
+            style={{ 
+              padding: 8,
+              backgroundColor: colors.primaryLight + '20',
+              borderRadius: 8,
+            }}
+            activeOpacity={0.7}
+          >
+            <AlertCircle size={22} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
         <Text style={[styles.stepTitle, { color: colors.textSecondary }]}>{stepTitles[currentStep - 1]}</Text>
         {renderStepIndicator()}
       </View>
@@ -2285,17 +2310,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 400,
-    maxHeight: Platform.OS === 'android' ? hp(60.9) : hp(65),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    maxHeight: Platform.OS === 'android' ? hp(70) : hp(75),
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
     overflow: 'hidden',
   },
   modalHeader: {
-    padding: 20,
-    paddingBottom: 12,
+    padding: spacing(20),
+    paddingBottom: spacing(12),
+    paddingTop: Platform.OS === 'android' ? spacing(16) : spacing(20),
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
@@ -2371,14 +2403,15 @@ const styles = StyleSheet.create({
     lineHeight: fs(17),
   },
   modalButton: {
-    margin: 16,
-    marginTop: 12,
+    margin: spacing(16),
+    marginTop: spacing(12),
+    marginBottom: Platform.OS === 'android' ? spacing(12) : spacing(16),
     borderRadius: 14,
     overflow: 'hidden',
   },
   modalButtonGradient: {
-    paddingVertical: 15,
-    paddingHorizontal: 32,
+    paddingVertical: Platform.OS === 'android' ? spacing(14) : spacing(15),
+    paddingHorizontal: spacing(32),
     alignItems: 'center',
     justifyContent: 'center',
   },

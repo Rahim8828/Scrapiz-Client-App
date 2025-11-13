@@ -1,10 +1,8 @@
-import React from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  SafeAreaView, 
   ScrollView,
   StatusBar,
   Platform

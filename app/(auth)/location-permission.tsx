@@ -105,16 +105,13 @@ export default function LocationPermissionScreen() {
       // Success - check if user is already authenticated
       if (isAuthenticated) {
         // Already logged in, go directly to main app
-        console.log('✅ Location set, user already authenticated → Navigate to tabs');
         router.replace('/(tabs)');
       } else {
         // Not logged in, navigate to login page
-        console.log('✅ Location set, user not authenticated → Navigate to login');
         router.replace('/(auth)/login');
       }
       
     } catch (error) {
-      console.error('Error setting pincode:', error);
       setError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);

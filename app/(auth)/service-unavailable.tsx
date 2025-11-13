@@ -89,10 +89,16 @@ export default function ServiceUnavailableScreen() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      // await saveToWaitlist({ email, phone, city: cityName });
+      // TODO: Integrate with backend API
+      // Example API call structure:
+      // const response = await fetch('YOUR_API_ENDPOINT/waitlist', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email, phone, city: cityName })
+      // });
+      // if (!response.ok) throw new Error('API call failed');
       
-      // Simulate API call
+      // Temporary: Simulate API call for demo
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       Alert.alert(

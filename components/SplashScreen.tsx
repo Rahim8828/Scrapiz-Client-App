@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Animated, Image, Platform } from 'react-native';
 import { wp, hp, fs } from '../utils/responsive';
 import { useTheme } from '../contexts/ThemeContext';
@@ -8,10 +8,7 @@ interface SplashScreenProps {
 }
 
 export default function SplashScreen({ onFinish }: SplashScreenProps) {
-  console.log('[Splash] SplashScreen component rendering...');
-  
   const { colors, theme } = useTheme();
-  console.log('[Splash] Theme loaded:', theme, 'colors:', colors ? 'available' : 'not available');
   
   const progressAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -23,18 +20,13 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
   useEffect(() => {
     const mountTime = Date.now();
-    console.log('[Splash] SplashScreen mounted, Platform:', Platform.OS, 'Theme:', theme);
     
     // Ensure splash displays for minimum duration on both platforms
     const startDelay = Platform.OS === 'android' ? 400 : 200;
     const animationDuration = 4000;
     const fallbackTimeout = 5500;
     
-    console.log('[Splash] Timing configuration - startDelay:', startDelay, 'ms, animationDuration:', animationDuration, 'ms, fallbackTimeout:', fallbackTimeout, 'ms');
-    
     const timer = setTimeout(() => {
-      const delayElapsed = Date.now() - mountTime;
-      console.log('[Splash] Starting splash animations after', delayElapsed, 'ms delay');
       
       // Start all animations together
       Animated.parallel([
@@ -72,8 +64,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
           })
         ),
       ]).start(() => {
-        const totalElapsed = Date.now() - mountTime;
-        console.log('[Splash] Animations complete after', totalElapsed, 'ms total, finishing splash...');
         if (!hasFinished.current) {
           hasFinished.current = true;
           onFinish();
@@ -97,8 +87,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
     // Fallback timeout to ensure splash finishes even if animations fail
     const fallbackTimer = setTimeout(() => {
       if (!hasFinished.current) {
-        const totalElapsed = Date.now() - mountTime;
-        console.warn('[Splash] Splash animation timeout after', totalElapsed, 'ms, forcing finish');
         hasFinished.current = true;
         onFinish();
       }
@@ -229,8 +217,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
   });
 
-  console.log('[Splash] Rendering splash screen UI');
-
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
@@ -248,8 +234,6 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
             style={styles.icon}
             resizeMode="contain"
             fadeDuration={0}
-            onLoad={() => console.log('[Splash] Logo image loaded successfully')}
-            onError={(error) => console.error('[Splash] Logo image failed to load:', error)}
           />
         </Animated.View>
 
