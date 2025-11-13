@@ -9,7 +9,7 @@ export default function ScrapizLogo({ width = 150 }: ScrapizLogoProps) {
   const height = width / 2.5; // Aspect ratio of the logo
   return (
     <Image
-      source={require('../assets/images/scrapiz-Logo.png')}
+      source={require('../assets/images/Scrapiz-logo.png')}
       style={{ width, height }}
       resizeMode="contain"
     />

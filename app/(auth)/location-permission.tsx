@@ -187,7 +187,7 @@ export default function LocationPermissionScreen() {
           </Text>
 
           {/* Benefits */}
-          <View style={styles.benefitsContainer}>
+          <View style={[styles.benefitsContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.benefitItem}>
               <View style={[styles.checkmark, { backgroundColor: colors.primaryLight + '30' }]}>
                 <Text style={[styles.checkmarkText, { color: colors.primary }]}>✓</Text>
@@ -395,12 +395,10 @@ const styles = StyleSheet.create({
   },
   benefitsContainer: {
     width: '100%',
-    backgroundColor: '#f9fafb',
     borderRadius: spacing(16),
     padding: spacing(20),
     marginBottom: spacing(24),
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   benefitItem: {
     flexDirection: 'row',

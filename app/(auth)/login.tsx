@@ -236,7 +236,7 @@ export default function LoginScreen() {
           >
             <View style={styles.logoContainer}>
               <Image 
-                source={require('@/assets/images/scrapiz-Logo.png')}
+                source={require('@/assets/images/Scrapiz-logo.png')}
                 style={styles.logoImage}
                 resizeMode="contain"
               />

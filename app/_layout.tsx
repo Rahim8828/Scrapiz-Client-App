@@ -32,6 +32,7 @@ export default function RootLayout() {
           <ProfileProvider>
             <LocationProvider>
               <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="services" options={{ headerShown: false }} />
